@@ -27,7 +27,7 @@ header {
 }
 
 .shopping-list-item {
-    width: 250px;
+    width: 350px;
     height: fit-content;
     padding: 10px;
     color: #333;
@@ -46,21 +46,30 @@ header {
     scale: 1.1;
 }
 
-.delete-button {
+#delete-button {
     position: absolute;
     top: 10px;
     right: 10px;
     background: none;
     border: none;
-    cursor: pointer;
 }
 
-.done-button {
+#done-button {
     position: absolute;
     top: 10px;
     right: 40px; /* Adjust this value to control the spacing between the two buttons */
     background: none;
     border: none;
+}
+
+#add-list {
+    width: 100px;
+    height: fit-content;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+button:hover {
     cursor: pointer;
 }
 

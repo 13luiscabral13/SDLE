@@ -1,12 +1,1 @@
-[
-    {
-        "id": 1,
-        "title": "Shopping List 1",
-        "text": "Shopping list for Continent!"
-    },
-    {
-        "id": 2,
-        "title": "Shopping List 2",
-        "text": "Shopping list for Pingo Doce!"
-    }
-]
+[{"id":1,"title":"Shopping List 1","text":"Shopping list for Continent!"},{"id":2,"title":"teste","text":"Shopping list para teste"}]

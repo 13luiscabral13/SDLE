@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
 });
 
 
-let shoppingList = JSON.parse(fs.readFileSync('shoppingLists.json', 'utf8'));
+let shoppingLists = JSON.parse(fs.readFileSync('shoppingLists.json', 'utf8'));
 
 // POST Methods
 /**
@@ -46,10 +46,10 @@ let shoppingList = JSON.parse(fs.readFileSync('shoppingLists.json', 'utf8'));
 app.post('/shoppingList', (req, res, next) => { 
   const title = req.body.title
   const text = req.body.text
-  shoppingList.push({id: shoppingList.length, title: title, text: text})
-  fs.writeFileSync('shoppingLists.json', JSON.stringify(shoppingList));
+  shoppingLists.push({id: shoppingLists.length, title: title, text: text})
+  fs.writeFileSync('shoppingLists.json', JSON.stringify(shoppingLists));
   
-  console.log(shoppingList)
+  console.log(shoppingLists)
   res.status(200).end()
 })
 
@@ -57,18 +57,32 @@ app.post('/shoppingList', (req, res, next) => {
  * Method to remove a Shopping List
  */
 app.post('/delete', (req, res, next) => {
-    shoppingList.pop()
-    fs.writeFileSync('shoppingLists.json', JSON.stringify(shoppingList));
-  
-    console.log(shoppingList)
+  const title = req.body.title
+  const text = req.body.text
+  console.log(title, text)
+  const indexToRemove = shoppingLists.findIndex(item => item.title === title && item.text === text);
+  console.log(indexToRemove)
+
+  if (indexToRemove !== -1) {
+    // If the object is found, remove it from the array
+    shoppingLists.splice(indexToRemove, 1);
+
+    fs.writeFileSync('shoppingLists.json', JSON.stringify(shoppingLists));
     res.status(200).end()
+    console.log("deleted succefully")
+  }
+  else {
+    // If the object is not found, send an error response
+    res.status(404).end(); // You can use a different status code if needed
+    console.log("not deleted")
+  }
 })
 
 
 // GET Methods
 app.get('/get', (req, res, next) => {
   //console.log(shoppingList)
-  res.json(shoppingList)
+  res.json(shoppingLists)
 }) 
 
 
