@@ -1,0 +1,66 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #d4bf91;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4 {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.shopping-lists {
+    padding: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+.shopping-list-item {
+    width: 250px;
+    height: fit-content;
+    padding: 10px;
+    color: #333;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.shopping-list-item:hover {
+    cursor: pointer;
+    scale: 1.1;
+}
+
+.delete-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.done-button {
+    position: absolute;
+    top: 10px;
+    right: 40px; /* Adjust this value to control the spacing between the two buttons */
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
