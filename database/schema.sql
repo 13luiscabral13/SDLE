@@ -1,0 +1,17 @@
+CREATE TABLE list (
+    name TEXT,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    url TEXT NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE item (
+    name TEXT NOT NULL,
+    list_url TEXT NOT NULL,
+    current INTEGER NOT NULL DEFAULT 0,
+    quantity INTEGER NOT NULL,
+    checked BOOLEAN NOT NULL DEFAULT 0,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    changed BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (list_url) REFERENCES list (url),
+    PRIMARY KEY (name, list_url)
+);
