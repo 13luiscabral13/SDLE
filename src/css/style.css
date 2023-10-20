@@ -27,14 +27,15 @@ header {
 }
 
 .shopping-list-item {
-    width: 350px;
+    width: 300px;
     height: fit-content;
-    padding: 10px;
+    padding: 30px;
     color: #333;
     background-color: white;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 10px;
     margin-top: 10px;
     border-radius: 10px;
@@ -73,3 +74,40 @@ button:hover {
     cursor: pointer;
 }
 
+
+#modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+#modal form {
+    width: 15%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #333;
+    padding: 20px;
+    border-radius: 5px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+#modal button {
+    padding: 5px 10px;
+    background-color: #494949;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#modal button:hover {
+    background-color: #deab3c74;
+}

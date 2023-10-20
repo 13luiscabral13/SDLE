@@ -1,18 +1,33 @@
 const shoppingLists = document.querySelector('.shopping-lists')
 const createShoppingListBtn = document.getElementById('add-list')
 
+const modal = document.getElementById('modal');
+const form = document.getElementById("new-list-form");
+const cancelBtn = document.getElementById('cancel-btn');
+
+
 const url = "http://localhost:5000";
 
-function updateTime() {
-    getShoppingLists();
-}
-
 createShoppingListBtn.addEventListener('click', () => {
-
-  createList()
+  modal.style.display = 'block';
 })
 
+cancelBtn.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+// ------------------- Adding a Shopping List -------------------
+form.addEventListener("submit", function(event) {
+  event.preventDefault();
+  createList()
+});
+
+
 // ------------------- Updates the Content Every second -------------------
+function updateTime() {
+  getShoppingLists();
+}
+
 updateTime(); // update immediately
 setInterval(updateTime, 1000); // update every second
 
@@ -20,9 +35,12 @@ setInterval(updateTime, 1000); // update every second
 // POST - create a new shoppingList
 function createList() {
     // json to send to server
+    const title = document.querySelector(".list-name");
+    const titleText = title.value
+    modal.style.display = 'none';
+    console.log(titleText)
     const jsonToSend = {
-        title: "teste",
-        text: "Shopping list para teste"
+        title: titleText,
     }
 
     fetch(url + '/shoppingList', {
@@ -44,11 +62,9 @@ function createList() {
 }
 
 // POST - removes a Shopping List
-function removeList(title, description) {
-  console.log(title, description)
+function removeList(title) {
     const jsonToSend = {
       title: title,
-      text: description
     }
     fetch(url + '/delete', {
         method: 'POST',
@@ -70,7 +86,7 @@ function removeList(title, description) {
 
 // GET - all Shopping Lists
 function getShoppingLists() {
-    fetch(url + '/get', {
+    fetch(url + '/list', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -99,9 +115,6 @@ function display_shopping_lists(data) {
     const title = document.createElement('h1')
     title.textContent = element.title
 
-    const description = document.createElement('p')
-    description.textContent = element.text
-
     const deleteBtn = document.createElement('button')
     // Set the button's ID
     deleteBtn.id = 'delete-button';
@@ -115,11 +128,10 @@ function display_shopping_lists(data) {
 
     deleteBtn.addEventListener('click', () => {
       //alert("Are you sure you want to delete the shopping list? This will delete it for everyone associated to it!!")
-      removeList(title.textContent, description.textContent)
+      removeList(title.textContent)
     })
 
     shoppingList.appendChild(title)
-    shoppingList.appendChild(description)
     shoppingList.appendChild(deleteBtn)
     shoppingLists.appendChild(shoppingList)
   });

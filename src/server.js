@@ -1,5 +1,7 @@
+const { time } = require('console');
 const express = require('express');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
@@ -45,23 +47,30 @@ let shoppingLists = JSON.parse(fs.readFileSync('shoppingLists.json', 'utf8'));
  */
 app.post('/shoppingList', (req, res, next) => { 
   const title = req.body.title
-  const text = req.body.text
-  shoppingLists.push({id: shoppingLists.length, title: title, text: text})
+  const timestamp = new Date().toUTCString();
+  // Generate a URL based on the title and timestamp
+  const url = generateHash(title, timestamp);
+
+  shoppingLists.push({id: shoppingLists.length, title: title, url: url, timestamp: timestamp})
   fs.writeFileSync('shoppingLists.json', JSON.stringify(shoppingLists));
   
   console.log(shoppingLists)
   res.status(200).end()
 })
 
+function generateHash(title, timestamp) {
+  const hash = crypto.createHash('md5');
+  hash.update(title + timestamp.toString());
+  return hash.digest('hex');
+}
+
+
 /**
  * Method to remove a Shopping List
  */
 app.post('/delete', (req, res, next) => {
   const title = req.body.title
-  const text = req.body.text
-  console.log(title, text)
-  const indexToRemove = shoppingLists.findIndex(item => item.title === title && item.text === text);
-  console.log(indexToRemove)
+  const indexToRemove = shoppingLists.findIndex(item => item.title === title);
 
   if (indexToRemove !== -1) {
     // If the object is found, remove it from the array
@@ -80,11 +89,10 @@ app.post('/delete', (req, res, next) => {
 
 
 // GET Methods
-app.get('/get', (req, res, next) => {
-  //console.log(shoppingList)
+app.get('/list', (req, res, next) => {
+  // list of urls for the display
   res.json(shoppingLists)
 }) 
-
 
 /**
  * deals with errors
