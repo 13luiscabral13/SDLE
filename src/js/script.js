@@ -120,19 +120,29 @@ function display_shopping_lists(data) {
     deleteBtn.id = 'delete-button';
 
     // Create an <i> element for the trash icon
-    const icon = document.createElement('i');
-    icon.classList.add('fas', 'fa-trash'); // Add classes to the <i> element
+    const deleteIcon = document.createElement('i');
+    deleteIcon.classList.add('fas', 'fa-trash'); // Add classes to the <i> element
 
     // Append the <i> element to the button
-    deleteBtn.appendChild(icon);
+    deleteBtn.appendChild(deleteIcon);
 
     deleteBtn.addEventListener('click', () => {
       //alert("Are you sure you want to delete the shopping list? This will delete it for everyone associated to it!!")
       removeList(title.textContent)
     })
 
+    const shareBtn = document.createElement('button')
+    shareBtn.id = 'share-button'
+
+    const shareIcon = document.createElement('i');
+    shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
+
+    // Append the <i> element to the button
+    shareBtn.appendChild(shareIcon);
+
     shoppingList.appendChild(title)
     shoppingList.appendChild(deleteBtn)
+    shoppingList.appendChild(shareBtn)
     shoppingLists.appendChild(shoppingList)
   });
 }

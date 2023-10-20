@@ -55,10 +55,10 @@ header {
     border: none;
 }
 
-#done-button {
+#share-button {
     position: absolute;
     top: 10px;
-    right: 40px; /* Adjust this value to control the spacing between the two buttons */
+    right: 40px;
     background: none;
     border: none;
 }
