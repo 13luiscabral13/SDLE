@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Shopping List</title>
+    <script src="./js/script.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    
+    <header>
+        <h1>Shopping Lists</h1>
+        <button id="add-list">Create Shpping List</button>
+    </header>
+    <div id="modal" style="display: none;">
+        <form id="new-list-form">
+            <h3>New Shopping List</h3>
+            <label for="course-name">Type of Service Offered:</label>
+            <input type="text" class="list-name" name="shopping-list-name">
+            <button type="submit" id="create-list-btn">Create List</button>
+            <button type="button" id="cancel-btn">Cancel</button>
+        </form>
+      </div>
+    <ul class="shopping-lists">
+    </ul>  
+    
+</body>
+</html>
