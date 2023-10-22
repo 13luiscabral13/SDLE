@@ -1,35 +1,16 @@
-const { time } = require('console');
 const express = require('express');
 const fs = require('fs');
 const crypto = require('crypto');
+const http = require('http');
+const WebSocket = require('ws');
 
-const app = express();
+const httpPort = 5000;
+const app = express(); // Create an Express application instance.
 app.use(express.json());
 
-const hostname = 'localhost';
-const port = 5000;
-
-/**
- * display the webpage 
- */
-app.get('/', (req, res) => {
-  fs.readFile('../src/index.html', (err, data) => {
-    if (err) {
-      res.status(500).send('Internal Server Error');
-    } else {
-      res.setHeader('Content-Type', 'text/html');
-      res.status(200).send(data);
-    }
-  });
-});
-
-// Getting the content from index.html, css file and js files to another port
-app.use(express.static('./css'));
-app.use(express.static('./js'));
-app.use(express.static('../src'));
+const allowedOrigins = []
 
 app.use(function(req, res, next) {
-  const allowedOrigins = ['http://localhost:5000'];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -38,19 +19,16 @@ app.use(function(req, res, next) {
   next();
 });
 
-
 let shoppingLists = JSON.parse(fs.readFileSync('shoppingLists.json', 'utf8'));
 
 // POST Methods
-/**
- * Method to create a Shopping List
- */
+// Method to create a Shopping List
 app.post('/shoppingList', (req, res, next) => { 
   const title = req.body.title
   const timestamp = new Date().toUTCString();
   // Generate a URL based on the title and timestamp
   const url = generateHash(title, timestamp);
-
+  
   shoppingLists.push({id: shoppingLists.length, title: title, url: url, timestamp: timestamp})
   fs.writeFileSync('shoppingLists.json', JSON.stringify(shoppingLists));
   
@@ -64,14 +42,11 @@ function generateHash(title, timestamp) {
   return hash.digest('hex');
 }
 
-
-/**
- * Method to remove a Shopping List
- */
+// Method to remove a Shopping List
 app.post('/delete', (req, res, next) => {
   const title = req.body.title
   const indexToRemove = shoppingLists.findIndex(item => item.title === title);
-
+  
   if (indexToRemove !== -1) {
     // If the object is found, remove it from the array
     shoppingLists.splice(indexToRemove, 1);
@@ -87,22 +62,38 @@ app.post('/delete', (req, res, next) => {
   }
 })
 
-
 // GET Methods
 app.get('/list', (req, res, next) => {
   // list of urls for the display
   res.json(shoppingLists)
 }) 
 
-/**
- * deals with errors
- */
+// deals with errors
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Internal Server Error');
 });
 
-// server listening on port -> port
-app.listen(port, () => {
-  console.log(`Server running at http://${hostname}:${port}`);
+const server = http.createServer(app); // Pass the app to create the HTTP server.
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', function connection(ws, req) {
+  const origin = req.headers.origin;
+  if (!allowedOrigins.includes(origin)) {
+    allowedOrigins.push(origin);
+    console.log(allowedOrigins)
+  }
+
+  ws.on('message', function incoming(data) {
+    wss.clients.forEach(function each(client) {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(data);
+      }
+    });
+    console.log(data)
+  });
+});
+
+server.listen(httpPort, function() {
+  console.log(`Server is listening on ${httpPort}!`);
 });

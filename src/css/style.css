@@ -99,6 +99,13 @@ button:hover {
     flex-direction: column;
 }
 
+.form-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
 #modal button {
     padding: 5px 10px;
     background-color: #494949;
