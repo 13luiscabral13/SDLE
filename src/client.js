@@ -45,3 +45,6 @@ const server = http.createServer((req, res) => {
 server.listen(port, () => {
   console.log(`Web interface is running on http://localhost:${port}`);
 });
+
+
+// create local database if there isnt one

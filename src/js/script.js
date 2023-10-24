@@ -171,6 +171,12 @@ function display_shopping_lists(data) {
     shoppingList.appendChild(title)
     shoppingList.appendChild(deleteBtn)
     shoppingList.appendChild(shareBtn)
+
+    shoppingList.addEventListener('click', () => {
+      // show a popup with the list of items
+      
+    })
+
     shoppingLists.appendChild(shoppingList)
   });
 }
@@ -198,6 +204,7 @@ function modalWithURL(url) {
   // Create a "Copy" button
   const copyButton = document.createElement('button');
   copyButton.innerText = 'Copy';
+  copyButton.id = 'copy-button'
   copyButton.addEventListener('click', (e) => {
     e.preventDefault();
     // Copy the content of the input field to the clipboard
@@ -206,10 +213,22 @@ function modalWithURL(url) {
     copyButton.innerText = 'Copied'
   });
 
+  const closeButton = document.createElement('button');
+  closeButton.id = 'delete-button';
+  const closeIcon = document.createElement('i');
+  closeIcon.classList.add('fas', 'fa-close'); // Add classes to the <i> element
+  // Append the <i> element to the button
+  closeButton.appendChild(closeIcon);
+
+  closeButton.addEventListener('click', () => {
+    document.body.removeChild(modal);
+  })
+
   // Append the label, input field, and copy button to the form
   form.appendChild(label);
   form.appendChild(inputField);
   form.appendChild(copyButton);
+  form.appendChild(closeButton)
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();

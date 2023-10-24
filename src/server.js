@@ -6,7 +6,7 @@ const WebSocket = require('ws');
 
 const httpPort = 5000;
 const app = express(); // Create an Express application instance.
-app.use(express.json());
+app.use(express.json()); // to remove when json file is removed
 
 const allowedOrigins = []
 
@@ -97,3 +97,25 @@ wss.on('connection', function connection(ws, req) {
 server.listen(httpPort, function() {
   console.log(`Server is listening on ${httpPort}!`);
 });
+
+// Database
+/*
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('mydatabase.db');
+
+db.all('SELECT * FROM users', [], (err, rows) => {
+  if (err) {
+    throw err;
+  }
+  rows.forEach(row => {
+    console.log(row.id, row.name);
+  });
+});
+
+db.run('INSERT INTO users (id, name) VALUES (?, ?)', [1, 'John Doe'], function(err) {
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log(`A row has been inserted with id ${this.lastID}`);
+});
+*/

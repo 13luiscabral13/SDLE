@@ -118,3 +118,7 @@ button:hover {
 #modal button:hover {
     background-color: #deab3c74;
 }
+
+#copy-button {
+    margin-top: 10px;
+}
