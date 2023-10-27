@@ -5,9 +5,14 @@ const modal = document.getElementById('modal');
 const form = document.getElementById("new-list-form");
 const cancelBtn = document.getElementById('cancel-btn');
 
-const url = "http://localhost:5000";
+const port = parseInt(document.getElementById('port').textContent);
+console.log('Port:', port);
+const url = `http://localhost:${port}`;
+console.log('URL:', url);
+
 
 // -------------------------------------------------
+// Must be a seperate thread doing a polling loop from the server
 let ws;
 
 function init() {
