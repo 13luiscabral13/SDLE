@@ -1,7 +1,11 @@
+html {
+    height: 100%;
+}
+
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    background-color: #d4bf91;
+    background: linear-gradient(to top left, #dad196, #a48a5b);
     margin: 0;
     padding: 0;
 }
@@ -12,48 +16,84 @@ h1, h2, h3, h4 {
 }
 
 header {
-    padding: 20px;
-    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
     flex-direction: row;
     justify-content: space-between;
+}
+
+.horizontal-line {
+    width: 100%; /* Fills the entire width of the screen */
+    height: 2px;  /* You can adjust the height as needed */
+    background-color: #000; /* Change this to your desired line color */
+    margin-top: 10px;
+}
+
+#shopping-list-header {
+    text-align: center;
+    margin-top: 10px;
 }
 
 .shopping-lists {
     padding: 30px;
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
     flex-wrap: wrap;
 }
 
 .shopping-list-item {
     width: 300px;
     height: fit-content;
-    padding: 30px;
+    padding-bottom: 30px;
+    margin: 20px;
     color: #333;
-    background-color: white;
-    display: flex;
+    background-color: none;
+    display: block;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin-bottom: 10px;
     margin-top: 10px;
-    border-radius: 10px;
     position: relative;
+    font-size: 13px;
+}
+
+.shopping-list-item h1 {
+    font-weight: lighter;
+
+}
+
+#div-title {
+    background-color: rgb(255, 255, 255);
+    padding: 10px;
+    padding-left: 20px;
+    text-align: center;
+    padding-right: 20px;
+    border-radius: 5px;
+}
+
+#div-info {
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#timestamp {
+    text-align: right;
+    margin-right: 5px;
+}
+
+#delete-button {
+    text-align: left;
+    background: none;
+    border: none;
 }
 
 .shopping-list-item:hover {
     cursor: pointer;
-    scale: 1.1;
 }
 
-#delete-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-}
 
 #done-button {
     position: absolute;
@@ -66,8 +106,14 @@ header {
 #add-list {
     width: 100px;
     height: fit-content;
-    padding: 5px;
-    border-radius: 5px;
+    padding: 7px;
+    margin: 5px;
+    margin-left: 15px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #000000;
 }
 
 button:hover {
@@ -86,23 +132,24 @@ button:hover {
 }
 
 #modal form {
+    text-align: center;
     width: 15%;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #333;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 5px;
-    color: white;
+    color: rgb(0, 0, 0);
     display: flex;
     flex-direction: column;
 }
 
 #modal button {
     padding: 5px 10px;
-    background-color: #494949;
-    color: #fff;
+    background-color: #e7dddd;
+    color: #000000;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -111,3 +158,11 @@ button:hover {
 #modal button:hover {
     background-color: #deab3c74;
 }
+
+#modal-btns {
+    display:flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+
