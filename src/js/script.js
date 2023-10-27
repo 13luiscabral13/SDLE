@@ -58,7 +58,7 @@ function updateTime() {
 }
 
 updateTime(); // update immediately
-setInterval(updateTime, 1000); // update every second
+//setInterval(updateTime, 1000); // update every second
 
 // ------------------- Server Part -------------------
 // POST - create a new shoppingList
@@ -140,9 +140,32 @@ function display_shopping_lists(data) {
   data.forEach(element => {
     const shoppingList = document.createElement('div')
     shoppingList.classList.add('shopping-list-item')
-
+    
     const title = document.createElement('h1')
     title.textContent = element.title
+
+    const divtitle = document.createElement('div')
+    divtitle.id = "div-title"
+    divtitle.append(title)
+
+
+    const divinfo = document.createElement('div')
+    divinfo.id = "div-info"
+    // Create a Date object by parsing the original timestamp
+    let date = new Date(element.timestamp);
+
+    // Use Intl.DateTimeFormat to format the date as "20/10/23"
+    const formattedDate = new Intl.DateTimeFormat("en-GB", { year: "2-digit", month: "2-digit", day: "2-digit" }).format(date);
+
+    // Format the time as "09:05"
+    const formattedTime = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+    // Combine the date and time
+    const formattedTimestamp = `${formattedDate}  ${formattedTime}`;
+
+    const timestamp = document.createElement('h4')
+    timestamp.textContent = formattedTimestamp
+    timestamp.id = "timestamp"
 
     const deleteBtn = document.createElement('button')
     // Set the button's ID
@@ -160,28 +183,11 @@ function display_shopping_lists(data) {
       removeList(title.textContent)
     })
 
-    const shareBtn = document.createElement('button')
-    shareBtn.id = 'share-button'
+    divinfo.appendChild(deleteBtn)
+    divinfo.appendChild(timestamp)
 
-    const shareIcon = document.createElement('i');
-    shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
-
-    // Append the <i> element to the button
-    shareBtn.appendChild(shareIcon);
-
-    shareBtn.addEventListener('click', () => {
-      modalWithURL(element.url)
-    })
-
-    shoppingList.appendChild(title)
-    shoppingList.appendChild(deleteBtn)
-    shoppingList.appendChild(shareBtn)
-
-    shoppingList.addEventListener('click', () => {
-      // show a popup with the list of items
-      
-    })
-
+    shoppingList.appendChild(divtitle)
+    shoppingList.appendChild(divinfo)
     shoppingLists.appendChild(shoppingList)
   });
 }

@@ -9,22 +9,25 @@
 <body>
     <p id="port" style="display: none;">{{PORT}}</p>
     <header>
-        <h1>Shopping Lists</h1>
-        <button id="add-list">Create Shopping List</button>
+        <button id="add-list">Create List</button>
+        <div class="horizontal-line"></div>
     </header>
-    <div id="modal" hidden>
+    <div>
+        <h1 id="shopping-list-header">My Shopping Lists</h1>
+    </div>
+    <div id="modal" style="display: none;">
         <form id="new-list-form">
             <h3>New Shopping List</h3>
-            <label for="shopping-list-name">Title of Shopping List:</label>
-            <input type="text" class="list-name" id="shopping-list-name" name="shopping-list-name">
-            <div class="form-buttons">
-                <button type="submit" id="create-list-btn">Create List</button>
+            <label for="course-name">Type of Service Offered:</label>
+            <input type="text" class="list-name" name="shopping-list-name">
+            <div id="modal-btns">
                 <button type="button" id="cancel-btn">Cancel</button>
+                <button type="submit" id="create-list-btn">Create List</button>
             </div>
         </form>
       </div>
-    <ul class="shopping-lists">
-    </ul>  
+    <div class="shopping-lists">
+    </div>  
     
 </body>
 </html>
