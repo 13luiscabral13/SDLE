@@ -186,6 +186,10 @@ function display_shopping_lists(data) {
     const shareIcon = document.createElement('i');
     shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
     const divbtns = document.createElement('div');
+
+    shareBtn.addEventListener('click', () => {
+      modalWithURL(element.url)
+    })
     divbtns.id = "divbtns"
     // Append the <i> element to the button
     shareBtn.appendChild(shareIcon);
