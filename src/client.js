@@ -6,7 +6,14 @@ const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
+
+// Check if a port is provided as a command-line argument
 const port = process.argv[2];
+
+if (!port) {
+  console.log('Please provide a <PORT> on the command \x1b[3mnode client.js <PORT>\x1b[0m. (Example: node client.js 5500)');
+  process.exit(1); // Exit the script
+}
 
 // Creates the 'Live Server' where User is running
 app.get('/', (req, res) => { // Gets the index.html content and gives the port of the Client

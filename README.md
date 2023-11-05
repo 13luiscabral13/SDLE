@@ -5,15 +5,11 @@
 ## How to Run:
 - firstly bend over and spell run (in english)
 - Create the packages - ``npm init``
-- Install all the packages used in script.js and in client.js
-    - ``npm install fs``
-    - ``npm install http``
-    - ``npm install ws``
-    - ``npm install path``
-    - ``npm install sqlite3``
+- This will install all the dependencies listed in package.json and ensure that they have the exact versions specified in package-lock.json.
+    - ``npm install``
 - Run Server
     - ``cd src``
-    - ``npm start``
+    - ``npm start`` || ``node server.js`` (since the 'start' command has only the _node server.js_ command)
 - Run Client
     - ``cd src``
-    - ``node client.js port`` - (e.g. node client.js 5500)
+    - ``node client.js <PORT>`` - (e.g. node client.js 5500)
