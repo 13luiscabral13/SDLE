@@ -72,5 +72,3 @@ T2:
 - O proxy pode ser o coordinator? Penso que não, mas investigar.
 
 Atenção: o coordinator passa a ser um ponto de falha no sistema
-
-CRDT design:
