@@ -21,11 +21,10 @@ class CRDT {
         this.changed = true;
     }   
 
-    getLists() {
-        return {
-            activeLists: Array.from(this.activeLists.keys()),
-            deletedLists: Array.from(this.deletedLists),
-        };
+    getKnownLists() {
+        return Array.from(
+            new Set([...this.activeLists.keys(), ...this.deletedLists])
+        );
     }
 
     createItem(url, name, total, quantity = 0) {
@@ -46,7 +45,7 @@ class CRDT {
     updateItem(url, name, quantity) {
         if (this.activeLists.has(url)) {
             const list = this.activeLists.get(url);
-            if (list.get('activeItems').has(name)) {
+            if (list.get('activeItems').has(name) && !list.get('deletedItems').has(name)) {
                 const item = list.get('activeItems').get(name);
                 item.quantity = quantity;
                 item.changed = true;
@@ -95,16 +94,17 @@ class CRDT {
                             total: item.total,
                         };
                     }),
+                    deletedItems: Array.from(list.get('deletedItems')),
                 };
             }),
             deletedLists: Array.from(this.deletedLists),
+            knownLists: this.getKnownLists(),
         };
         return JSON.stringify(serializedState, null, 2);
     }
 
     getDeltaState() {
         const deltaState = {
-            deletedLists: Array.from(this.deletedLists),
             activeLists: Array.from(this.activeLists.entries()).filter(([_, list]) => {
                 return list.get('changed') || Array.from(list.get('activeItems').values()).some(item => item.changed);
             }).map(([url, list]) => {
@@ -120,16 +120,22 @@ class CRDT {
                             total: item.total,
                         };
                     }),
+                    deletedItems: Array.from(list.get('deletedItems')),
                 };
             }),
+            deletedLists: Array.from(this.deletedLists),
+            knownLists: this.getKnownLists(),
         };
         this.resetChangedState();
         this.changed = false;
         return JSON.stringify(deltaState, null, 2);
     }
 
-    merge(crdt) { // recebe o delta CRDT do 
-        // TODO
+    merge(response) {
+        // o argumento terá sempre 2 partes
+        // uma lista das listas conhecidas
+        // o delta CRDT do sistema
+        // verificar este comportamento
     }
 }
 
