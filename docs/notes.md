@@ -72,3 +72,20 @@ T2:
 - O proxy pode ser o coordinator? Penso que não, mas investigar.
 
 Atenção: o coordinator passa a ser um ponto de falha no sistema
+
+----
+
+CRDT
+
+implementação em poc/CRDT.js
+
+o getDeltaState() é o que vai ser enviado para o proxy/servidor:
+
+- temos de enviar sempre a lista de listas deletadas, porque não há garantias que todo o sistema saiba que eliminamos
+- temos de enviar sempre a lista de listas conhecidas, porque só assim o servidor pode retornar informação sobre elas
+
+se houver conexão:
+
+- enviar o getDeltaState()
+- esperar por um state do lado do servidor
+- fazer CRDT.merge(response) // atualizará o conteúdo das listas que conheço
