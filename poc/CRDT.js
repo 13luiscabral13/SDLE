@@ -3,6 +3,7 @@ class CRDT {
     constructor() {
         this.activeLists = new Map();
         this.deletedLists = new Set();
+        this.changed = false;
     }
 
     createList(url, name) {
@@ -12,11 +13,20 @@ class CRDT {
         newList.set('activeItems', new Map());
         newList.set('deletedItems', new Set());
         this.activeLists.set(url, newList);
+        this.changed = true;
     }
 
     deleteList(url) {
         this.deletedLists.add(url);
+        this.changed = true;
     }   
+
+    getLists() {
+        return {
+            activeLists: Array.from(this.activeLists.keys()),
+            deletedLists: Array.from(this.deletedLists),
+        };
+    }
 
     createItem(url, name, total, quantity = 0) {
         if (this.activeLists.has(url)) {
@@ -30,6 +40,7 @@ class CRDT {
                 list.set('changed', true);
             }
         }
+        this.changed = true;
     } 
 
     updateItem(url, name, quantity) {
@@ -42,6 +53,7 @@ class CRDT {
                 list.set('changed', true);
             }
         }
+        this.changed = true;
     }
 
     deleteItem(url, name) {
@@ -52,6 +64,20 @@ class CRDT {
                 list.get('deletedItems').add(name);
             }
         }
+        this.changed = true;
+    }
+
+    hasChanges() {
+        return this.changed;
+    }
+
+    resetChangedState() {
+        this.activeLists.forEach((list) => {
+            list.set('changed', false);
+            list.get('activeItems').forEach((item) => {
+                item.changed = false;
+            });
+        });
     }
 
     getState() {
@@ -97,10 +123,12 @@ class CRDT {
                 };
             }),
         };
+        this.resetChangedState();
+        this.changed = false;
         return JSON.stringify(deltaState, null, 2);
     }
 
-    merge(crdt) {
+    merge(crdt) { // recebe o delta CRDT do 
         // TODO
     }
 }
