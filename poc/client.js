@@ -1,15 +1,21 @@
-const zmq = require("zeromq")
+const zmq = require('zeromq');
 
 async function run() {
-  const sock = new zmq.Request
+  const requester = new zmq.Request();
 
-  sock.connect("tcp://127.0.0.1:3000")
-  console.log("Producer bound to port 3000")
+  requester.connect('tcp://localhost:5559');
+  console.log('Connected to port 5559');
 
-  await sock.send("4")
-  const [result] = await sock.receive()
+  while (1) {
+    console.log('Sending request...');
+    await requester.send('Hello');
+    const [response] = await requester.receive();
+    console.log(`Received reply: ${response.toString()}`);
+  }
 
-  console.log(result)
+  requester.close();
 }
 
-run()
+run().catch((err) => {
+  console.error(err);
+});
