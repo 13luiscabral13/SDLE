@@ -89,3 +89,5 @@ se houver conexão:
 - enviar o getDeltaState()
 - esperar por um state do lado do servidor
 - fazer CRDT.merge(response) // atualizará o conteúdo das listas que conheço
+
+- crdt state based para não depender de operações externas. faz a operação e depois comunica.
