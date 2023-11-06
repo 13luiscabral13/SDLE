@@ -82,6 +82,20 @@ app.get('/lists', (req, res) => { // reads all the Users shopping lists
   });
 });
 
+// get a list
+app.get('/lists/url', (req, res) => {
+  const url = req.url;
+  db.all('SELECT * FROM item WHERE list_url = ?', [url], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).json({ error: 'An error occurred while fetching data.' });
+    }
+
+    console.log(rows);
+    res.status(200).json(rows);
+  });
+});
+
 
 // POST Requests
 app.post('/createList', (req, res) => { // create a new shopping list
@@ -120,8 +134,11 @@ app.listen(port, () => {
 
 
 // Auxiliar Functions
-function generateHash(title, timestamp) { // Generates an hash for the URL
+function generateHash(title, timestamp) {
+  const randomNum = Math.floor(Math.random() * 100000); // Generate a random number
+  const combinedInput = title + timestamp.toString() + randomNum.toString();
+  
   const hash = crypto.createHash('md5');
-  hash.update(title + timestamp.toString());
+  hash.update(combinedInput);
   return hash.digest('hex');
 }
