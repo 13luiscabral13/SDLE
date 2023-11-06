@@ -1,12 +1,10 @@
-----
-
-node client.js
+## node client.js
 
 lança uma thread principal (T1) que:
 
-- se não existir bd, cria;
+- se não existir BD, cria;
 - fazer load do conteúdo para um CRDT volátil;
-- cria mais uma thread (T2);
+- cria mais um thread (T2);
 
 a partir daqui o CRDT tem de ser manipulado sempre com controlo de concorrência (!!)
 
@@ -19,15 +17,22 @@ T2:
     - se algo for mudado no CRDT (*), envia esse CRDT
     - espera pela resposta. A resposta deve conter o merge() dos dados enviados com o que o servidor tem. Atualiza o CRDT local.
 
+    ```
+    x em x segundos:
+        send_to_proxy(crdt.getDeltaState()) // até receber resposta -> polling implicito (blocking)
+        receive_from_proxy(response)
+        crdt.merge(response)
+    ```
+
 (*) Como vai saber que algo foi mudado?
 - Mandar sempre tudo está fora de questão, é perda de recursos.
-- Talvez apostar no CRDT com estados, averiguar a possibilidade.
+- Talvez apostar no CRDT com estados, averiguar a possibilidade -> funciona
 
 Desta forma não precisamos de timestamps ou dirtys na DB. Da mesma forma, não precisamos de transactions na DB, porque ela irá só ser manipulada pela T1.
 
 ---
 
-node proxy.js
+## node proxy.js
 
 um proxy permite:
 
@@ -40,7 +45,7 @@ Atenção: o proxy passa a ser um ponto de falha no sistema.
 
 ---
 
-node server.js
+## node server.js
 
 semelhante (?) a um client, mas sem a parte frontend. Ou com a parte de frontend simples só para ver os logs.
 
@@ -73,9 +78,7 @@ T2:
 
 Atenção: o coordinator passa a ser um ponto de falha no sistema
 
-----
-
-CRDT
+## CRDT
 
 implementação em poc/CRDT.js
 
@@ -90,4 +93,4 @@ se houver conexão:
 - esperar por um state do lado do servidor
 - fazer CRDT.merge(response) // atualizará o conteúdo das listas que conheço
 
-- crdt state based para não depender de operações externas. faz a operação e depois comunica.
+- justificação para usar estados: crdt state based para não depender de operações externas. faz a operação e depois comunica. assim não perde local-operations.

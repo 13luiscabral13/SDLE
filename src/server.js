@@ -46,6 +46,7 @@ let shoppingLists = JSON.parse(fs.readFileSync('shoppingLists.json', 'utf8'));
  * Method to create a Shopping List
  */
 app.post('/shoppingList', (req, res, next) => { 
+
   const title = req.body.title
   const timestamp = new Date().toUTCString();
   // Generate a URL based on the title and timestamp
