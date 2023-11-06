@@ -1,6 +1,5 @@
 # TODO
 
-
 - Fixar uma versão de ZeroMQ (que funcione para todos);
 
 
