@@ -100,10 +100,7 @@ TODO.
 
 - [Local First](https://www.inkandswitch.com/local-first/)
 - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
-
-# For US
-
-- [Diagrams](https://app.diagrams.net/?title=SDLE&client=1#G1agWQFztshaIb5v3dHwP1MBTlk_1rd5jp)
+- []
 
 ## Members
 
@@ -111,3 +108,5 @@ TODO.
 - Bárbara Carvalho, up202004695@up.pt
 - Fábio Sá, up202007658@up.pt
 - Luís Cabral, up202006464@up.pt
+
+#### T05, SDLE 2023/24
