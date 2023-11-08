@@ -53,7 +53,7 @@ To enable the sharing of shopping lists between users, two requirements must be 
 - The list must be instantiated locally, following the Local First approach;
 - The URL must be unique throughout the system and serve as the identifier for that specific list;
 
-If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (Universally Unique Identifiers) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
+If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
 
 ![Local First Schema](../imgs/Local.png)
 <p align=center>Figure 2: Local First Approach</p>
