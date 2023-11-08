@@ -82,7 +82,7 @@ In this cloud-based system, clients connect to a central proxy server. This arch
 - An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
 - Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
 
-The implemented proxy serves an additional crucial function: load balancing [N], which prevents performance loss or bottlenecks in exhaustive requests to a single server, thereby enhancing the overall system efficiency. This load balancing can be achieved using the ZeroMQ library, with ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection). However, it is important to note that the proxy becomes a potential point of failure in the system.
+The implemented proxy server serves a critical additional function: load balancing. Load balancing is essential to prevent performance degradation or bottlenecks when handling extensive requests on a single server, ultimately enhancing the efficiency of the entire system. To achieve load balancing, we employ the ZeroMQ library, utilizing ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection).
 
 ![Local First Schema](../imgs/Local.png)
 <p align=center>Figure 3: Proxy as load balancer</p>
@@ -114,20 +114,15 @@ An interruption or failure of a node does not signify a permanent exit from the 
 
 ## 4. CRDT
 
-CRDTs (*Conflict-free Replicated Data Types*), will be utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
+CRDTs (*Conflict-free Replicated Data Types*), will be utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic and idempotent convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
 
-Dado que cada utilizador deverá ser capaz de instanciar e eliminar listas, instanciar e eliminar itens em cada lista e incrementar o número de itens (??)
+Dado que cada utilizador deverá ser capaz de instanciar e eliminar listas e instanciar e eliminar os itens de cada lista, a implementação do CRDT para estas estruturas de dados baseada em ORMap (*Observed Remove Map*) e Enable Wins é uma escolha acertada. De facto, dado o background do projecto, eliminaçãões e atualizações concorrentes de uma lista ou item deve promover a permanência dessa mesma estrutura no sistema, evitando assim a perda de informação.
 
-Para comportar todas estas operações é necessário recorrer a uma implementação de um ORMAP (*Object Remove Map*), que garante...
-Em cada item, a implementação de um CRDT do 
-
-delta enable crdt
-ORMAP (objected remove map)
-EWFLAG (enable wins flag)
-
-GCounter https://github.com/CBaquero/delta-enabled-crdts#gcounter
+Para incrementar a quantidade comprada de cada item o CRDT GCounter é a escolha indicada pois consegue lidar de forma eficiente com incrementos concorrentes.
 
 Delta enabled CRDTs [N], citação
+
+Todas estas operações são idepotentes, garantindo a convergência do estado atual do sistema e uma eventual consistência.
 
 ## 5. References
 
