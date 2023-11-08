@@ -89,7 +89,8 @@ The implemented proxy server serves a critical additional function: load balanci
 
 The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [N], providing a concrete and proven strategy for achieving scalability and resilience.
 
-Figure 4
+![Local First Schema](../imgs/Node.png)
+<p align=center>Figure 4: Cloud Node</p>
 
 As stated in [Figure 4], the server-side application will also have three threads, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
 
@@ -114,15 +115,13 @@ An interruption or failure of a node does not signify a permanent exit from the 
 
 ## 4. CRDT
 
-CRDTs (*Conflict-free Replicated Data Types*), will be utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic and idempotent convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
+CRDTs (*Conflict-free Replicated Data Types*), will be utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
 
-Dado que cada utilizador deverá ser capaz de instanciar e eliminar listas e instanciar e eliminar os itens de cada lista, a implementação do CRDT para estas estruturas de dados baseada em ORMap (*Observed Remove Map*) e Enable Wins é uma escolha acertada. De facto, dado o background do projecto, eliminaçãões e atualizações concorrentes de uma lista ou item deve promover a permanência dessa mesma estrutura no sistema, evitando assim a perda de informação.
+Given that each user should be able to instantiate and delete lists, as well as instantiate and delete items within each list, implementing CRDT for these data structures based on `ORMap` (*Observed Remove Map*) and `Enable Wins` is a prudent choice. Indeed, considering the project's context, concurrent deletions and updates of a list or item should promote the persistence of that structure in the system, thereby avoiding information loss.
 
-Para incrementar a quantidade comprada de cada item o CRDT GCounter é a escolha indicada pois consegue lidar de forma eficiente com incrementos concorrentes.
+To increment the quantity purchased for each item, the `GCounter CRDT` is the suitable choice as it efficiently handles concurrent increments.
 
-Delta enabled CRDTs [N], citação
-
-Todas estas operações são idepotentes, garantindo a convergência do estado atual do sistema e uma eventual consistência.
+All operations performed on these Delta-enabled CRDTs [N] are idempotent, ensuring the convergence of the current system state and eventual consistency.
 
 ## 5. References
 
