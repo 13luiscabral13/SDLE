@@ -74,18 +74,28 @@ In general, the previously described approach will ensure the proper functioning
 
 ## Cloud
 
+Clients will connect to the same proxy. This will enable:
+
+- An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
+- Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
+
+The implemented proxy serves an additional crucial function: load balancing [N], which prevents performance loss or bottlenecks in exhaustive requests to a single server, thereby enhancing the overall system efficiency. This load balancing can be achieved using the ZeroMQ library [N], with ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection). However, it is important to note that the proxy becomes a potential point of failure in the system.
+
+![Local First Schema](../imgs/Local.png)
+<p align=center>Figure 3: Proxy as load balancer</p>
+
+## CRDT
+
 Intro. TODO.
-
-### Server-side fault tolerance
-
-TODO.
 
 ## References
 
 - [Local First](https://www.inkandswitch.com/local-first/)
 - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
-- [uuid](https://www.npmjs.com/package/uuid)
-- 
+- [UUID in JS](https://www.npmjs.com/package/uuid)
+- [Worker Threads](https://nodejs.org/api/worker_threads.html)
+- [Load Balancer](https://zguide.zeromq.org/docs/chapter3/#The-Load-Balancing-Pattern)
+- []()
 
 ## Members
 
