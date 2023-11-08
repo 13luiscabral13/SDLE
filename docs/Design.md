@@ -1,6 +1,6 @@
 # Design Choices
 
-## Topics
+## Topics -> TODO: rever isto em forma de relatório, pode ter subsecções ou não...
 
 - [Technology](#technology)
 - [Local First](#local-first)
@@ -24,6 +24,7 @@ We have selected the technologies for our project with a strong focus on simplic
 - `Node.js` for client and server side applications;
 - `SQLite3` for database management system;
 - `ZeroMQ.js` for high-performance asynchronous messaging;
+- // Adicionar UUID em Node js, se se verificar seguro;
 
 This way, our project can be run with simple commands:
 
@@ -42,20 +43,23 @@ $ node server.js <PORT>     # server
 
 The initial priority is to achieve a "Local First" behavior for the application. To do this, it's important to persist data from known lists. In the first phase, the web application will check if a local database exists:
 
-- If it exists, it loads its content (lists and items).
-- If it doesn't exist, it creates one based on the pre-established [schema](#schema).
+- If it exists, it loads its content (lists and items);
+- If it doesn't exist, it creates an empty one based on the pre-established [schema](#schema);
 
 All subsequent user interactions with the application will be controlled by the main thread, which is also responsible for [client-side fault tolerance](#client-side).
 
 To enable the sharing of shopping lists between users, two requirements must be met simultaneously:
 
-- The list must be instantiated locally, following the Local First approach.
-- The URL must be unique throughout the system and serve as the identifier for that specific list.
+- The list must be instantiated locally, following the Local First approach;
+- The URL must be unique throughout the system and serve as the identifier for that specific list;
 
-If the URL were just a hash of the list name, there would likely be conflicts in the system. However, adding entropy from a creation timestamp doesn't necessarily solve the issue, as there could be situations where two users instantiate two lists with the same name at the same time. Therefore, the entropy of a random string is added to potentially create a unique URL in the system:
+Se o URL for construído baseado no list name e/ou no timestamp da criação, poderá haver conflitos no sistema. Por esse motivo, uma possível implementação baseia-se em UUIDs. UUIDs são identificadores únicos globalmente que garantem exclusividade em todo o sistema. No nosso caso, iremos optar por usar a versão 4, que garante alta probabilidade de unicidade, pois é baseada em dados aleatórios, tornando-a adequada para a geração de URLs únicos em um sistema distribuído onde os nós não podem se comunicar inicialmente.
+
+If the URL were just  list name, there would likely be conflicts in the system. However, adding entropy from a creation timestamp doesn't necessarily solve the issue, as there could be situations where two users instantiate two lists with the same name at the same time. Therefore, the entropy of a random string is added to potentially create a unique URL in the system:
 
 ```js
-let url = hash(name + timestamp() + randomString());
+const { v4: uuidv4 } = require('uuid');
+let url = baseUrl + uuid4();
 ```
 
 ### Client-side fault tolerance
@@ -96,6 +100,9 @@ TODO.
 
 - [Local First](https://www.inkandswitch.com/local-first/)
 - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
+
+# For US
+
 - [Diagrams](https://app.diagrams.net/?title=SDLE&client=1#G1agWQFztshaIb5v3dHwP1MBTlk_1rd5jp)
 
 ## Members
