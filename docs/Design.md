@@ -1,32 +1,25 @@
 # Design Choices
 
-## Topics -> TODO: rever isto em forma de relatório, pode ter subsecções ou não...
+## Topics
 
-- [Technology](#technology)
-- [Local First](#local-first)
-    - [Overview](#overview)
-    - [Client-side fault tolerance](#client-side-fault-tolerance)
-    - [Cloud connection](#cloud-connection)
-    - [Database](#database)
-        - [Schema](#schema)
-        - [ACID](#acid)
-- [Cloud](#cloud)
-    - [CRDT]()
-    - [Sharding]()
-    - [Server-side fault tolerance](#server-side-fault-tolerance)
-- [References](#references)
-- [Members](#members)
+- [1. Technology](#1-technology)
+- [2. Local First](#2-local-first)
+    - [2.1 Client Request Management](#21-client-request-management)
+    - [2.2 Fault tolerance](#22-fault-tolerance)
+    - [2.3 Cloud connection](#23-cloud-connection)
+- [3. Cloud](#cloud)
+- [4. CRDT](#crdt)
+- [5. References](#references)
+- [6. Members](#members)
 
-## Technology
+## 1. Technology
 
-We have selected the technologies for our project with a strong focus on simplicity and user-friendliness. Our goal is to create a seamless experience for our users, particularly in web applications, where ease of installation and use is paramount. Therefore, the technologies used were: 
+Selected client-side technologies prioritize simplicity and user-friendliness, emphasizing a seamless experience, particularly in web applications where ease of installation and use is crucial. The chosen technologies are:
 
-- `Node.js` for client and server side applications;
-- `SQLite3` for database management system;
-- `ZeroMQ.js` for high-performance asynchronous messaging;
-- // Adicionar UUID em Node js, se se verificar seguro;
+- `Node.js`, for client and server side applications;
+- `SQLite3`, for database management system;
 
-This way, our project can be run with simple commands:
+This ensures the project runs seamlessly with straightforward commands:
 
 ```bash
 $ node client.js <PORT>     # client
@@ -34,55 +27,55 @@ $ node proxy.js             # proxy
 $ node server.js <PORT>     # server
 ```
 
-## Local First
+Furthermore, selected technologies and libraries will be employed for the implementation of distributed system connections, cloud infrastructure management, and the maintenance of integrity and consistency:
+
+- `ZeroMQ.js`, for high-performance asynchronous messaging;
+- `UUID`, for the generation of unique identifiers across the entire system;
+
+## 2. Local First
 
 ![Local First Schema](../imgs/Local.png)
 <p align=center>Figure 1: Local First Approach</p>
 
-### Overview
+The primary focus initially is to attain a `Local First` [1] behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the web application checks for the existence of a local database:
 
-The initial priority is to achieve a "Local First" behavior for the application. To do this, it's important to persist data from known lists. In the first phase, the web application will check if a local database exists:
+- If present, loads its content (lists and items);
+- If absent, creates an empty database following the predefined schema presented in [Figure 2];
 
-- If it exists, it loads its content (lists and items);
-- If it doesn't exist, it creates an empty one based on the pre-established [schema](#schema);
+![Database schema](../imgs/Schema.png)
+Figure 2: Database schema
 
-All subsequent user interactions with the application will be controlled by the main thread, which is also responsible for [client-side fault tolerance](#client-side).
+Note that the boolean attribute changed is crucial for identifying, in adverse conditions, which lists or items have been modified by the client but are not yet in the cloud backup. 
 
-To enable the sharing of shopping lists between users, two requirements must be met simultaneously:
+To enable the sharing of shopping lists between users, two requirements must be met simultaneously when they are created:
 
 - The list must be instantiated locally, following the Local First approach;
 - The URL must be unique throughout the system and serve as the identifier for that specific list;
 
-Se o URL for construído baseado no list name e/ou no timestamp da criação, poderá haver conflitos no sistema. Por esse motivo, uma possível implementação baseia-se em UUIDs. UUIDs são identificadores únicos globalmente que garantem exclusividade em todo o sistema. No nosso caso, iremos optar por usar a versão 4, que garante alta probabilidade de unicidade, pois é baseada em dados aleatórios, tornando-a adequada para a geração de URLs únicos em um sistema distribuído onde os nós não podem se comunicar inicialmente.
+If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (Universally Unique Identifiers) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
 
-If the URL were just  list name, there would likely be conflicts in the system. However, adding entropy from a creation timestamp doesn't necessarily solve the issue, as there could be situations where two users instantiate two lists with the same name at the same time. Therefore, the entropy of a random string is added to potentially create a unique URL in the system:
+O sistema terá
 
-```js
-const { v4: uuidv4 } = require('uuid');
-let url = baseUrl + uuid4();
-```
+O sistema terá em si três threads a correr em simultâneo. 
 
-### Client-side fault tolerance
+### 2.1 Client Request Management
+
+
+
+### 2.2 Fault tolerance
 
 The web application will periodically store the manipulated information in the local file. This way, even if there is an error in the application or connectivity issues, most, if not all, of the user's changes will be saved.
 
-### Cloud connection
+### 2.3 Cloud connection
 
 In general, the approach previously described will make the web application function well, even without a connection to the cloud and, therefore, without the ability to back up or transfer information. For this purpose, the application will periodically attempt to establish a connection with the cloud and will run two more threads:
 
 - Updating local information according to what is received from the cloud;
 - Sending modified local information to the cloud to propagate it throughout the system;
 
-### Database
+### 2.4 Concurrency
 
-#### Schema
 
-![Database schema](../imgs/Schema.png)
-
-In addition to the standard attributes, we've chosen to add two more:
-
-- `timestamp` - this allows you to view the timestamp of the item or list's creation or last modification. It is relevant if **Last-Writer-Wins** is necessary.
-- `changed` - a boolean that indicates whether the item or list has been modified since the last sync with the cloud. This is relevant because it ensures that only the modified contents are sent to the cloud, reducing bandwidth usage.
 
 #### ACID 
 
@@ -100,7 +93,8 @@ TODO.
 
 - [Local First](https://www.inkandswitch.com/local-first/)
 - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
-- []
+- [uuid](https://www.npmjs.com/package/uuid)
+- 
 
 ## Members
 
