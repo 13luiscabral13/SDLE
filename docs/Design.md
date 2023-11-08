@@ -7,10 +7,13 @@
     - [2.1 Client Request Management](#21-client-request-management)
     - [2.2 Fault tolerance](#22-fault-tolerance)
     - [2.3 Cloud connection](#23-cloud-connection)
-- [3. Cloud](#cloud)
-- [4. CRDT](#crdt)
-- [5. References](#references)
-- [6. Members](#members)
+- [3. Cloud](#3-cloud)
+    - [3.1 Client Request Management](#31-client-request-management)
+    - [3.2 Fault tolerance](#32-fault-tolerance)
+    - [3.3 Replication between nodes](#33-replication-between-nodes)
+- [4. CRDT](#4-crdt)
+- [5. References](#5-references)
+- [6. Members](#6-members)
 
 ## 1. Technology
 
@@ -72,7 +75,7 @@ In general, the previously described approach will ensure the proper functioning
 - Updating local information based on what is received from the cloud;
 - Sending modified local information to the cloud to propagate it throughout the system.
 
-## Cloud
+## 3. Cloud
 
 Clients will connect to the same proxy. This will enable:
 
@@ -84,20 +87,37 @@ The implemented proxy serves an additional crucial function: load balancing [N],
 ![Local First Schema](../imgs/Local.png)
 <p align=center>Figure 3: Proxy as load balancer</p>
 
-## CRDT
+The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [N], providing a concrete and proven strategy for achieving scalability and resilience.
+
+As stated in [Figure 4], the server-side application will also have three threads, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
+
+### 3.1 Client Request Management
+
+
+
+### 3.2 Fault tolerance
+
+Just like on the client side, there is a need for each node/server to have its own database. Therefore, the server side web application will periodically store the volatile manipulated information in the local database file.
+
+### 3.3 Replication between nodes
+
+
+
+## 4. CRDT
 
 Intro. TODO.
 
-## References
+## 5. References
 
 - [Local First](https://www.inkandswitch.com/local-first/)
 - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
 - [UUID in JS](https://www.npmjs.com/package/uuid)
 - [Worker Threads](https://nodejs.org/api/worker_threads.html)
 - [Load Balancer](https://zguide.zeromq.org/docs/chapter3/#The-Load-Balancing-Pattern)
-- []()
+- [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+- [Gossip-Based Node Discovery]()
 
-## Members
+## 6. Members
 
 - André Costa, up201905916@up.pt
 - Bárbara Carvalho, up202004695@up.pt
