@@ -34,11 +34,11 @@ Furthermore, selected technologies and libraries will be employed for the implem
 
 - `ZeroMQ`, for high-performance asynchronous messaging;
 - `UUID`, for the generation of unique identifiers across the entire system;
-- `Async Mutex`, to inhibit issues of concurrency between threads;
+- `Async Mutex`, to inhibit issues of concurrency and deadlocks between threads;
 
 ## 2. Local First
 
-The primary focus initially is to attain a `Local First` [1] behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the web application checks for the existence of a local database:
+The primary focus initially is to attain a `Local First` [1] behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the client app checks for the existence of a local database:
 
 - If present, loads its content (lists and items);
 - If absent, creates an empty database following the predefined schema presented in [Figure 1];
@@ -46,14 +46,14 @@ The primary focus initially is to attain a `Local First` [1] behavior. To achiev
 ![Database schema](../imgs/Schema.png)
 Figure 1: Database schema
 
-Note that the boolean attribute changed is crucial for identifying, in adverse conditions, which lists or items have been modified by the client but are not yet in the cloud backup. 
+Note that the boolean attribute 'changed' is crucial for identifying, in adverse conditions, which lists or items have been modified by the client but are not yet in the cloud backup. 
 
 To enable the sharing of shopping lists between users, two requirements must be met simultaneously when they are created:
 
 - The list must be instantiated locally, following the Local First approach;
 - The URL must be unique throughout the system and serve as the identifier for that specific list;
 
-If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
+If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 of UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
 
 ![Local First Schema](../imgs/Local.png)
 <p align=center>Figure 2: Local First Approach</p>
@@ -93,7 +93,7 @@ As stated in [Figure 4], the server-side application will also have three thread
 
 ### 3.1 Client Request Management
 
-
+When the proxy redirects requests to the server, the server is responsible for adjusting its internal Conflict-free Replicated Data Type (CRDT) [N] based on client updates. The response to the request will be another CRDT whose content reflects the current state of the system for the lists known to the client.
 
 ### 3.2 Fault tolerance
 
@@ -101,7 +101,13 @@ Just like on the client side, there is a need for each node/server to have its o
 
 ### 3.3 Replication between nodes
 
+To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure N].
 
+Figura N
+
+When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
+
+An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
 
 ## 4. CRDT
 
@@ -115,7 +121,6 @@ Intro. TODO.
 - [Worker Threads](https://nodejs.org/api/worker_threads.html)
 - [Load Balancer](https://zguide.zeromq.org/docs/chapter3/#The-Load-Balancing-Pattern)
 - [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
-- [Gossip-Based Node Discovery]()
 
 ## 6. Members
 
