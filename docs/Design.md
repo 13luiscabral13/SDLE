@@ -77,17 +77,19 @@ In general, the previously described approach will ensure the proper functioning
 
 ## 3. Cloud
 
-Clients will connect to the same proxy. This will enable:
+In this cloud-based system, clients connect to a central proxy server. This architecture offers several key advantages:
 
 - An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
 - Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
 
-The implemented proxy serves an additional crucial function: load balancing [N], which prevents performance loss or bottlenecks in exhaustive requests to a single server, thereby enhancing the overall system efficiency. This load balancing can be achieved using the ZeroMQ library [N], with ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection). However, it is important to note that the proxy becomes a potential point of failure in the system.
+The implemented proxy serves an additional crucial function: load balancing [N], which prevents performance loss or bottlenecks in exhaustive requests to a single server, thereby enhancing the overall system efficiency. This load balancing can be achieved using the ZeroMQ library, with ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection). However, it is important to note that the proxy becomes a potential point of failure in the system.
 
 ![Local First Schema](../imgs/Local.png)
 <p align=center>Figure 3: Proxy as load balancer</p>
 
 The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [N], providing a concrete and proven strategy for achieving scalability and resilience.
+
+Figure 4
 
 As stated in [Figure 4], the server-side application will also have three threads, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
 
@@ -101,9 +103,10 @@ Just like on the client side, there is a need for each node/server to have its o
 
 ### 3.3 Replication between nodes
 
-To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure N].
+To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure 5].
 
-Figura N
+Figura 5
+Replication Ring
 
 When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
 
@@ -111,7 +114,20 @@ An interruption or failure of a node does not signify a permanent exit from the 
 
 ## 4. CRDT
 
-Intro. TODO.
+CRDTs (*Conflict-free Replicated Data Types*), will be utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
+
+Dado que cada utilizador deverá ser capaz de instanciar e eliminar listas, instanciar e eliminar itens em cada lista e incrementar o número de itens (??)
+
+Para comportar todas estas operações é necessário recorrer a uma implementação de um ORMAP (*Object Remove Map*), que garante...
+Em cada item, a implementação de um CRDT do 
+
+delta enable crdt
+ORMAP (objected remove map)
+EWFLAG (enable wins flag)
+
+GCounter https://github.com/CBaquero/delta-enabled-crdts#gcounter
+
+Delta enabled CRDTs [N], citação
 
 ## 5. References
 
@@ -121,6 +137,8 @@ Intro. TODO.
 - [Worker Threads](https://nodejs.org/api/worker_threads.html)
 - [Load Balancer](https://zguide.zeromq.org/docs/chapter3/#The-Load-Balancing-Pattern)
 - [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+- [CRDT](https://crdt.tech/papers.html)
+- [Delta enabled CRDTs](https://github.com/CBaquero/delta-enabled-crdts)
 
 ## 6. Members
 
