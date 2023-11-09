@@ -1,5 +1,6 @@
 class CRDT {
 
+    // 
     constructor() {
         this.activeLists = new Map();
         this.deletedLists = new Set();
