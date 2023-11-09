@@ -135,14 +135,14 @@ All operations performed on these Delta-enabled CRDTs [N] are idempotent, ensuri
 
 ## 5. References
 
-- [Local First](https://www.inkandswitch.com/local-first/)
-- [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
-- [UUID in JS](https://www.npmjs.com/package/uuid)
-- [Worker Threads](https://nodejs.org/api/worker_threads.html)
-- [Load Balancer](https://zguide.zeromq.org/docs/chapter3/#The-Load-Balancing-Pattern)
-- [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
-- [CRDT](https://crdt.tech/papers.html)
-- [Delta enabled CRDTs](https://github.com/CBaquero/delta-enabled-crdts)
+- [1] - [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+- [2] - [CRDT](https://crdt.tech/papers.html)
+- [3] - [Delta enabled CRDTs](https://github.com/CBaquero/delta-enabled-crdts)
+- [4] - [Load Balancer](https://zguide.zeromq.org/docs/chapter3/#The-Load-Balancing-Pattern)
+- [5] - [Local First](https://www.inkandswitch.com/local-first/)
+- [6] - [UUID in JS](https://www.npmjs.com/package/uuid)
+- [7] - [Worker Threads](https://nodejs.org/api/worker_threads.html)
+- [8] - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
 
 ## 6. Members
 
