@@ -1,0 +1,306 @@
+%%
+%% This is file `sample-acmcp.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `acmcp')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-acmcp.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+\documentclass[sigconf, authorversion, nonacm]{acmart}
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\usepackage[showframe]{geometry}% http://ctan.org/pkg/geometry
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{refs.bib} %Import the bibliography file
+\settopmatter{printacmref=false}
+
+
+%%
+%% These commands are for a JOURNAL article.
+\acmJournal{JDS}
+\acmVolume{37}
+\acmNumber{4}
+\acmArticle{111}
+\acmMonth{8}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+\begin{titlepage}
+	\begin{center}
+		\vspace*{1cm}
+		
+    {\fontsize{15}{16}\selectfont \textbf{Shopping List on the Cloud}}
+		
+		\vspace{1.5cm}
+		
+		\textbf{André Costa - up201905916}\\
+		\textbf{Bárbara Carvalho - up202004695}\\
+		\textbf{Fábio Sá - up202007658}\\
+		\textbf{Luís Cabral - up202006464}\\
+
+            \vspace{0.8cm}
+
+            \textbf{Class}: T05
+
+            \vspace{0.4cm}
+
+            \textbf{Course}: Large Scale Distributed Systems
+		
+				\vfill
+		
+		\includegraphics[width=0.4\textwidth]{UPORTO_fundotransparente}
+		
+		\vfill
+		
+	
+		
+		Master's Degree in Computer Engineering and Computation
+		
+		\vspace{0.8cm}
+
+            \textbf{Teacher}: Carlos Baquero-Moreno\\
+		
+	\end{center}
+\end{titlepage}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+
+
+%%
+%% Article type: Research, Review, Discussion, Invited or position
+\acmArticleType{Review}
+%%
+%% Links to code and data
+\acmCodeLink{https://github.com/borisveytsman/acmart}
+\acmDataLink{htps://zenodo.org/link}
+%%
+%%
+%% Sometimes the addresses are too long to fit on the page.  In this
+%% case uncomment the lines below and fill them accodingly.
+%%
+%% \authorsaddresses{Corresponding author: Ben Trovato,
+%% \href{mailto:trovato@corporation.com}{trovato@corporation.com};
+%% Institute for Clarity in Documentation, P.O. Box 1212, Dublin,
+%% Ohio, USA, 43017-6221}
+%%
+%%
+
+
+\maketitle
+
+\pagestyle{plain}
+
+\section{Technology}
+
+Selected client-side technologies prioritize simplicity and user-friendliness, emphasizing a seamless experience, particularly in web applications where ease of installation and use is crucial. The chosen technologies are:
+\begin{itemize}
+\item \textit{Node.js}, for client and server side applications;
+\item \textit{SQLite3}, for database management system;
+\end{itemize}
+
+Furthermore, selected technologies and libraries will be employed for the implementation of distributed system connections, cloud infrastructure management, and the maintenance of integrity and consistency:
+
+\begin{itemize}
+    \item \textit{ZeroMQ}, for high-performance asynchronous messaging;
+    \item \textit{UUID}, for the generation of unique identifiers across the entire system;
+    \item \textit{Async Mutex}, to inhibit issues of concurrency between threads;
+\end{itemize}
+
+\section{Local First}
+
+The primary focus initially is to attain a \textit{Local First} \cite{localfirst} behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the client app checks for the existence of a local database:
+
+\begin{itemize}
+    \item If present, loads its content (lists and items);
+    \item If absent, creates an empty database following the predefined schema presented in [Figure \ref{fig:Database schema}]
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{database_schema.png}
+        \caption{Database schema}
+        \label{fig:Database schema}
+    \end{figure}
+
+\end{itemize}
+
+Note that the boolean attribute 'changed' is crucial for identifying, in adverse conditions, which lists or items have been modified by the client but are not yet in the cloud backup. 
+
+To enable the sharing of shopping lists between users, two requirements must be met simultaneously when they are created:
+
+\begin{itemize}
+    \item The list must be instantiated locally, following the Local First approach;
+    \item The URL must be unique throughout the system and serve as the identifier for that specific list;
+\end{itemize}
+
+If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on \textit{UUIDs} \cite{zeromq}. UUIDs (\textit{Universally Unique Identifiers}) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 of UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{local_first_schema.png}
+    \caption{Local First schema}
+    \label{fig:Local First Schema}
+\end{figure}
+
+As depicted in [Figure \ref{fig:Local First Schema}], the client web application will have three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, \textit{Worker Threads} with \textit{Mutex} will be utilized. Since they will be manipulating the same data structure (a CRDT \cite{crdt}, to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
+
+\subsection{Client Request Management}
+
+This includes handling user inputs, processing requests promptly, and ensuring a responsive interaction with the application.
+
+
+\subsection{Fault tolerance}
+
+The web application will periodically store the volatile manipulated information in the local database file. This way, even if there is an error in the application or connectivity issues, most, if not all, of the user's changes will be saved, including those that have not yet been backed up to the cloud.
+
+\subsection{Cloud connection}
+
+In general, the previously described approach will ensure the proper functioning of the web application even without a connection to the cloud, thus limiting the ability to back up or transfer information. To address this, the application will periodically attempt to establish a connection with the cloud for the following purposes:
+
+\begin{itemize}
+    \item Updating local information based on what is received from the cloud;
+    \item Sending modified local information to the cloud to propagate it throughout the system.
+\end{itemize}
+
+\section{Cloud}
+
+In this cloud-based system, clients connect to a central proxy server. This architecture offers several key advantages:
+
+\begin{itemize}
+    \item An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
+    \item Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
+\end{itemize}
+
+The implemented proxy server serves a critical additional function: load balancing \cite{loadbalancer}. Load balancing is essential to prevent performance degradation or bottlenecks when handling extensive requests on a single server, ultimately enhancing the efficiency of the entire system. To achieve load balancing, we employ the ZeroMQ library, utilizing ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{proxy_schema.png}
+    \caption{Proxy Schema}
+    \label{fig:Proxy Schema}
+\end{figure}
+
+The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo \cite{amazondynamo}, providing a concrete and proven strategy for achieving scalability and resilience.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{cloud_node.png}
+    \caption{Cloud Node}
+    \label{fig:Cloud Node}
+\end{figure}
+
+As stated in [Figure \ref{fig:Cloud Node}], the server-side application will also have three threads, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
+
+\subsection{Client Request Management}
+When the proxy redirects requests to the server, the server is responsible for adjusting its internal Conflict-free Replicated Data Type (CRDT) \cite{crdt} based on client updates. The response to the request will be another CRDT whose content reflects the current state of the system for the lists known to the client.
+
+\subsection{Fault Tolerance}
+Just like on the client side, there is a need for each node/server to have its own database. Therefore, the server side web application will periodically store the volatile manipulated information in the local database file.
+
+\subsection{Replication between nodes}
+
+To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure \ref{fig:Replication Ring}].
+
+
+
+When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
+
+An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
+
+\section{CRDT}
+
+CRDTs (*Conflict-free Replicated Data Types*), will be utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
+
+Given that each user should be able to instantiate and delete lists, as well as instantiate and delete items within each list, implementing CRDT for these data structures based on \textit{ORMap} (*Observed Remove Map*) and \textit{Enable Wins} is a prudent choice. Indeed, considering the project's context, concurrent deletions and updates of a list or item should promote the persistence of that structure in the system, thereby avoiding information loss.
+
+To increment the quantity purchased for each item, the \textit{GCounter CRDT} is the suitable choice as it efficiently handles concurrent increments.
+
+All operations performed on these Delta-enabled CRDTs \cite{deltaenabledcrdt} are idempotent, ensuring the convergence of the current system state and eventual consistency.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{replication_ring.png}
+    \caption{Replication Ring}
+    \label{fig:Replication Ring}
+\end{figure}
+
+\nocite{*}
+\printbibliography
+
+\clearpage
+
+\appendix
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmcp.tex'.
