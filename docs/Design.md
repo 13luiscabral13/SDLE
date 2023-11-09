@@ -43,8 +43,10 @@ The primary focus initially is to attain a `Local First` [1] behavior. To achiev
 - If present, loads its content (lists and items);
 - If absent, creates an empty database following the predefined schema presented in [Figure 1];
 
-![Database schema](../imgs/Schema.png)
-Figure 1: Database schema
+<p align="center">
+  <img src="../imgs/Database.png">
+  <p align="center">Figure 1: Database Schema</p>
+</p><br>
 
 Note that the boolean attribute 'changed' is crucial for identifying, in adverse conditions, which lists or items have been modified by the client but are not yet in the cloud backup. 
 
@@ -55,8 +57,10 @@ To enable the sharing of shopping lists between users, two requirements must be 
 
 If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 of UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
 
-![Local First Schema](../imgs/Local.png)
-<p align=center>Figure 2: Local First Approach</p>
+<p align="center">
+  <img src="../imgs/Local.png">
+  <p align="center">Figure 2: Local First approach</p>
+</p><br>
 
 As depicted in [Figure 2], the client web application will have three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, `Worker Threads` with `Mutex` will be utilized. Since they will be manipulating the same data structure (a CRDT [3], to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
 
@@ -84,13 +88,17 @@ In this cloud-based system, clients connect to a central proxy server. This arch
 
 The implemented proxy server serves a critical additional function: load balancing. Load balancing is essential to prevent performance degradation or bottlenecks when handling extensive requests on a single server, ultimately enhancing the efficiency of the entire system. To achieve load balancing, we employ the ZeroMQ library, utilizing ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection).
 
-![Local First Schema](../imgs/Local.png)
-<p align=center>Figure 3: Proxy as load balancer</p>
+<p align="center">
+  <img src="../imgs/Proxy.png">
+  <p align="center">Figure 3: Proxy as load balancer</p>
+</p><br>
 
 The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [N], providing a concrete and proven strategy for achieving scalability and resilience.
 
-![Local First Schema](../imgs/Node.png)
-<p align=center>Figure 4: Cloud Node</p>
+<p align="center">
+  <img src="../imgs/Node.png">
+  <p align="center">Figure 4: Cloud Node</p>
+</p><br>
 
 As stated in [Figure 4], the server-side application will also have three threads, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
 
@@ -106,11 +114,10 @@ Just like on the client side, there is a need for each node/server to have its o
 
 To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure 5].
 
-Figura 5
-Replication Ring
-
-![Local First Schema](../imgs/Ring.png)
-<p align=center>Figure 5: Replication Ring</p>
+<p align="center">
+  <img src="../imgs/Ring.png">
+  <p align="center">Figure 5: Replication ring</p>
+</p><br>
 
 When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
 
