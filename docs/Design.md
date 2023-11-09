@@ -109,6 +109,9 @@ To ensure eventual consistency across the entire system, the replication of modi
 Figura 5
 Replication Ring
 
+![Local First Schema](../imgs/Ring.png)
+<p align=center>Figure 5: Replication Ring</p>
+
 When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
 
 An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
