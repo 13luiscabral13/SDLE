@@ -38,7 +38,7 @@ Furthermore, selected technologies and libraries will be employed for the implem
 
 ## 2. Local First
 
-The primary focus initially is to attain a `Local First` [1] behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the client app checks for the existence of a local database:
+The primary focus initially is to attain a `Local First` [5] behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the client app checks for the existence of a local database:
 
 - If present, loads its content (lists and items);
 - If absent, creates an empty database following the predefined schema presented in [Figure 1];
@@ -55,14 +55,14 @@ To enable the sharing of shopping lists between users, two requirements must be 
 - The list must be instantiated locally, following the Local First approach;
 - The URL must be unique throughout the system and serve as the identifier for that specific list;
 
-If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[2]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 of UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
+If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[8]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 of UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
 
 <p align="center">
   <img src="../imgs/Local.png">
   <p align="center">Figure 2: Local First approach</p>
 </p><br>
 
-As depicted in [Figure 2], the client web application will have three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, `Worker Threads` with `Mutex` will be utilized. Since they will be manipulating the same data structure (a CRDT [3], to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
+As depicted in [Figure 2], the client web application will have three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, `Worker Threads` with `Mutex` will be utilized. Since they will be manipulating the same data structure (a CRDT [2], to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
 
 ### 2.1 Client Request Management
 
@@ -86,14 +86,14 @@ In this cloud-based system, clients connect to a central proxy server. This arch
 - An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
 - Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
 
-The implemented proxy server serves a critical additional function: load balancing. Load balancing is essential to prevent performance degradation or bottlenecks when handling extensive requests on a single server, ultimately enhancing the efficiency of the entire system. To achieve load balancing, we employ the ZeroMQ library, utilizing ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection).
+The implemented proxy server serves a critical additional function: load balancing [4]. Load balancing is essential to prevent performance degradation or bottlenecks when handling extensive requests on a single server, ultimately enhancing the efficiency of the entire system. To achieve load balancing, we employ the ZeroMQ library, utilizing ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection).
 
 <p align="center">
   <img src="../imgs/Proxy.png">
   <p align="center">Figure 3: Proxy as load balancer</p>
 </p><br>
 
-The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [N], providing a concrete and proven strategy for achieving scalability and resilience.
+The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [1], providing a concrete and proven strategy for achieving scalability and resilience.
 
 <p align="center">
   <img src="../imgs/Node.png">
@@ -104,7 +104,7 @@ As stated in [Figure 4], the server-side application will also have three thread
 
 ### 3.1 Client Request Management
 
-When the proxy redirects requests to the server, the server is responsible for adjusting its internal Conflict-free Replicated Data Type (CRDT) [N] based on client updates. The response to the request will be another CRDT whose content reflects the current state of the system for the lists known to the client.
+When the proxy redirects requests to the server, the server is responsible for adjusting its internal Conflict-free Replicated Data Type (CRDT) [2] based on client updates. The response to the request will be another CRDT whose content reflects the current state of the system for the lists known to the client.
 
 ### 3.2 Fault tolerance
 
@@ -131,7 +131,7 @@ Given that each user should be able to instantiate and delete lists, as well as 
 
 To increment the quantity purchased for each item, the `GCounter CRDT` is the suitable choice as it efficiently handles concurrent increments.
 
-All operations performed on these Delta-enabled CRDTs [N] are idempotent, ensuring the convergence of the current system state and eventual consistency.
+All operations performed on these Delta-enabled CRDTs [3] are idempotent, ensuring the convergence of the current system state and eventual consistency.
 
 ## 5. References
 
