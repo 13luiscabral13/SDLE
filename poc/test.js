@@ -1,6 +1,14 @@
 import { CRDT } from "./CRDT.js";
+import sqlite3 from 'sqlite3';
 
-let c = new CRDT();
+// Instanciation
+let c = new CRDT('ze');
+const db = new sqlite3.Database('../database/mock.db');
+c.load(db);
+
+console.log(c.getState())
+
+/*
 c.createList("url_da_lista_A", "Lista A");
 c.createList("url_da_lista_B", "Lista B");
 console.log("-------------------");
@@ -19,3 +27,4 @@ console.log(c.getDeltaState());
 
 console.log("-------------------");
 console.log(c.getState());
+*/

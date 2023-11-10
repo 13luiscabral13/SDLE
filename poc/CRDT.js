@@ -1,10 +1,49 @@
 class CRDT {
 
-    // 
-    constructor() {
+    constructor(name) {
         this.activeLists = new Map();
         this.deletedLists = new Set();
         this.changed = false;
+        this.name = name;
+    }
+
+    async load(db) {
+
+        const listsRows = await db.all('SELECT * FROM list');
+        for (const row of listsRows) {
+            const url = row.url;
+            const name = row.name;
+
+            if (!this.activeLists.has(url)) {
+                this.createList(url, name);
+            }
+
+            const list = this.activeLists.get(url);
+            list.set('changed', row.changed === 1);
+
+            const itemsRows = await db.all('SELECT * FROM item WHERE list_url = ?', [url]);
+            for (const row of itemsRows) {
+                const itemName = row.name;
+
+                if (!list.get('activeItems').has(itemName)) {
+                    this.createItem(url, itemName, row.total, row.quantity);
+                }
+
+                const item = list.get('activeItems').get(itemName);
+                item.changed = row.changed === 1;
+            }
+        }
+
+        const deletedListsRows = await db.all('SELECT * FROM list WHERE deleted = TRUE');
+        for (const row of deletedListsRows) {
+            this.deletedLists.add(row.url)
+        }
+
+        this.changed = false;
+    }
+
+    getList(url) {
+        return this.activeLists.get(url);
     }
 
     createList(url, name) {
