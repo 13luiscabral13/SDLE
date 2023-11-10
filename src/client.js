@@ -68,6 +68,19 @@ if (!fs.existsSync(dbFile)) { // create local database if there isnt one
   var db = new sqlite3.Database(dbFile);
 }
 
+/* 
+- change the get requests to the crdt
+- add to the post resquests the write to crdt
+
+create 2 threads
+  - Create CRDT with db content
+  - one for handling client requests
+
+another for server comunication
+  - establish proxy connection
+    - every x seconds check crdt for changed content
+    - send server every x contents those changes and get the server side content
+*/
 
 // GET requests
 app.get('/lists', (req, res) => { // reads all the Users shopping lists
@@ -83,8 +96,8 @@ app.get('/lists', (req, res) => { // reads all the Users shopping lists
 });
 
 // get a list
-app.get('/lists/url', (req, res) => {
-  const url = req.url;
+app.get('/lists/:url', (req, res) => {
+  const url = req.params.url;
   db.all('SELECT * FROM item WHERE list_url = ?', [url], (err, rows) => {
     if (err) {
       console.error(err.message);

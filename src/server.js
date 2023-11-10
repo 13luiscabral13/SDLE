@@ -25,6 +25,13 @@ app.use((err, req, res, next) => {
 });
 
 const server = http.createServer(app); // Pass the app to create the HTTP server.
+
+/*
+- change websocket to proxy connection
+- crdt in server ?
+- server db ?
+*/
+
 const wss = new WebSocket.Server({ server }); 
 
 wss.on('connection', function connection(ws, req) { // Creates a WebSocket with a client so they can communicate
