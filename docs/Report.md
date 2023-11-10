@@ -17,12 +17,12 @@
 
 ## 1. Technology
 
-Selected client-side technologies prioritize simplicity and user-friendliness, emphasizing a seamless experience, particularly in web applications where ease of installation and use is crucial. The chosen technologies are:
+The selected client-side technologies prioritize simplicity and user-friendliness, placing a strong emphasis on delivering a seamless experience, especially in web applications where ease of installation and use is paramount. The selected technologies for this project encompass:
 
 - `Node.js`, for client and server side applications;
 - `SQLite3`, for database management system;
 
-This ensures the project runs seamlessly with straightforward commands:
+This guarantees that the project operates seamlessly with straightforward commands:
 
 ```bash
 $ node client.js <PORT>     # client
@@ -30,7 +30,7 @@ $ node proxy.js             # proxy
 $ node server.js <PORT>     # server
 ```
 
-Furthermore, selected technologies and libraries will be employed for the implementation of distributed system connections, cloud infrastructure management, and the maintenance of integrity and consistency:
+Additionally, the project employed selected technologies and libraries for the implementation of distributed system connections, cloud infrastructure management, and the maintenance of integrity and consistency:
 
 - `ZeroMQ`, for high-performance asynchronous messaging;
 - `UUID`, for the generation of unique identifiers across the entire system;
@@ -38,9 +38,9 @@ Furthermore, selected technologies and libraries will be employed for the implem
 
 ## 2. Local First
 
-The primary focus initially is to attain a `Local First` [5] behavior. To achieve this, persisting data from recognized lists is crucial. In the initial phase, the client app checks for the existence of a local database:
+The primary focus initially lies in achieving a `Local First` [5] behavior. To accomplish this, the persistence of data from recognized lists becomes crucial. In the initial phase, the client app checks for the presence of a local database.
 
-- If present, loads its content (lists and items);
+- If present, loads its content, lists and corresponding items;
 - If absent, creates an empty database following the predefined schema presented in [Figure 1];
 
 <p align="center">
@@ -48,21 +48,22 @@ The primary focus initially is to attain a `Local First` [5] behavior. To achiev
   <p align="center">Figure 1: Database Schema</p>
 </p><br>
 
-Note that the boolean attribute 'changed' is crucial for identifying, in adverse conditions, which lists or items have been modified by the client but are not yet in the cloud backup. 
+The boolean attributes `changed` and `deleted` play a crucial role in identifying, under adverse conditions, the lists or items that have been modified or deleted by the client but have not yet been included in the cloud backup.
 
-To enable the sharing of shopping lists between users, two requirements must be met simultaneously when they are created:
+To enable the secure sharing of shopping lists between users, two requirements should be concurrently met upon their creation:
 
 - The list must be instantiated locally, following the Local First approach;
-- The URL must be unique throughout the system and serve as the identifier for that specific list;
+- The generated URL must be unique throughout the system and serve as the identifier for that specific list;
 
-If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, a potential implementation is based on `UUIDs`[8]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. In our case, we will opt to use version 4 of UUIDs, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
+If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, the current implementation is based on `UUIDs`[8]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. 
+In this scenario, version 4 of UUIDs is selected, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
 
 <p align="center">
   <img src="../imgs/Local.png">
   <p align="center">Figure 2: Local First approach</p>
 </p><br>
 
-As depicted in [Figure 2], the client web application will have three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, `Worker Threads` with `Mutex` will be utilized. Since they will be manipulating the same data structure (a CRDT [2], to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
+As depicted in [Figure 2], the client web application has three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, `Worker Threads` with `Mutex` were utilized. Since they will be manipulating the same data structure (a CRDT [2], to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
 
 ### 2.1 Client Request Management
 
