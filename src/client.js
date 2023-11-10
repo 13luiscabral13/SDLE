@@ -1,11 +1,15 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
-const crypto = require('crypto');
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import sqlite3 from 'sqlite3';
+import crypto from 'crypto';
+import { CRDT } from './CRDT.mjs';
 
 const app = express();
 app.use(express.json());
+
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
 
 // Check if a port is provided as a command-line argument
 const port = process.argv[2];
@@ -82,8 +86,12 @@ another for server comunication
     - send server every x contents those changes and get the server side content
 */
 
+const crdt = new CRDT();
+
 // GET requests
 app.get('/lists', (req, res) => { // reads all the Users shopping lists
+  const knownLists = crdt.getKnownLists();
+  console.log(knownLists)
   db.all('SELECT * FROM list', (err, rows) => {
     if (err) {
       console.error(err.message);
@@ -117,7 +125,7 @@ app.post('/createList', (req, res) => { // create a new shopping list
   const url = generateHash(name, timestamp);
 
   // insert a new list in local db
-  db.run('INSERT INTO list (name, timestamp, url) VALUES (?, ?, ?)', [name, timestamp, url], function (err) {
+  db.run('INSERT INTO list (name, url) VALUES (?, ?)', [name, url], function (err) {
     if (err) {
       console.error(err.message);
       res.status(500).json({ message: 'Error Creating a List!'});
