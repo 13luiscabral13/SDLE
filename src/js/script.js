@@ -55,7 +55,7 @@ function updateTime() {
 }
 
 updateTime(); // update immediately
-setInterval(updateTime, 5000); // update every second
+//setInterval(updateTime, 5000); // update every second
 
 // ------------------- Server Part -------------------
 // POST - create a new shoppingList
@@ -128,6 +128,26 @@ function getShoppingLists() {
     });  
 }
 
+function getOneList(listUrl) {
+  fetch(url + '/lists/' + listUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+  })
+  .then(response => response.json())
+    .then(data => {
+        display_one_list(data)
+    })
+    .catch(error => {
+        console.error(error);
+    });  
+}
+
+function display_one_list(data) {
+  console.log("Entered this list");
+  console.log(data);
+}
 function display_shopping_lists(data) {
   let lastChild = shoppingLists.lastElementChild;
   while(lastChild) {
@@ -141,7 +161,8 @@ function display_shopping_lists(data) {
     
     const title = document.createElement('h1')
     title.textContent = element.name
-
+    const atitle = document.createElement('a')
+    atitle.href = '/lists/' + element.url    
     const divtitle = document.createElement('div')
     divtitle.id = "div-title"
     divtitle.append(title)
@@ -197,8 +218,8 @@ function display_shopping_lists(data) {
     divbtns.append(shareBtn)
     divinfo.appendChild(divbtns)  
     divinfo.appendChild(timestamp)
-
-    shoppingList.appendChild(divtitle)
+    atitle.appendChild(divtitle)
+    shoppingList.appendChild(atitle)
     shoppingList.appendChild(divinfo)
     shoppingLists.appendChild(shoppingList)
   });

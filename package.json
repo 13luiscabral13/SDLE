@@ -1,0 +1,27 @@
+{
+  "name": "pw",
+  "version": "1.0.0",
+  "description": "<3",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/13luiscabral13/SDLE.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/13luiscabral13/SDLE/issues"
+  },
+  "homepage": "https://github.com/13luiscabral13/SDLE#readme",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "path": "^0.12.7",
+    "sqlite3": "^5.1.6",
+    "start": "^5.1.0",
+    "ws": "^8.14.2"
+  }
+}

@@ -83,16 +83,17 @@ app.get('/lists', (req, res) => { // reads all the Users shopping lists
 });
 
 // get a list
-app.get('/lists/url', (req, res) => {
-  const url = req.url;
-  db.all('SELECT * FROM item WHERE list_url = ?', [url], (err, rows) => {
+app.get('/lists/:url', (req, res) => {
+  const filePath = path.join(__dirname, '../src/shopping_list.html');
+  fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'An error occurred while fetching data.' });
+      res.status(500).send('Error loading index.html');
+    } else {
+      // Replace {{PORT}} with the actual port
+      const htmlContent = data.toString().replace('{{PORT}}', port);
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(htmlContent);
     }
-
-    console.log(rows);
-    res.status(200).json(rows);
   });
 });
 
