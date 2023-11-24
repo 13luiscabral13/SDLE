@@ -6,4 +6,3 @@ INSERT INTO item (name, list_url, quantity) VALUES ("Leite", "something.com/minh
 INSERT INTO item (name, list_url, quantity) VALUES ("Maças", "url/bonito/com", 8);
 INSERT INTO item (name, list_url, quantity) VALUES ("Coisas", "something.com/minha_lista", 2);
 INSERT INTO item (name, list_url, quantity) VALUES ("André", "url/bonito/com", 1);
-
