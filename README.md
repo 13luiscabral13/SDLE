@@ -1,5 +1,11 @@
 # SDLE Project
 
+## Documentation
+
+- [Design](/docs/Report.md)
+- [Code](/src/)
+- [Database](./database/)
+
 ## How to Run:
 
 - firstly bend over and spell run (in english)
