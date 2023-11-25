@@ -1,15 +1,13 @@
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import sqlite3 from 'sqlite3';
-import crypto from 'crypto';
-import { CRDT } from './CRDT.mjs';
+const CRDT = require('./CRDT.js')
+
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
-
-const __filename = new URL(import.meta.url).pathname;
-const __dirname = path.dirname(__filename);
 
 // Check if a port is provided as a command-line argument
 const port = process.argv[2];
@@ -37,6 +35,8 @@ app.get('/', (req, res) => { // Gets the index.html content and gives the port o
 // Gets the rest of the files of "src" folder
 app.use(express.static(path.join(__dirname, '../src')));
 
+
+let crdt = new CRDT();
 
 // Creation and loading of the database
 const dbFile = `../database/local/${port}.db`;
@@ -86,12 +86,12 @@ another for server comunication
     - send server every x contents those changes and get the server side content
 */
 
-const crdt = new CRDT();
+
 
 // GET requests
 app.get('/lists', (req, res) => { // reads all the Users shopping lists
-  const knownLists = crdt.getKnownLists();
-  console.log(knownLists)
+  //const knownLists = crdt.getKnownLists();
+  //console.log(knownLists)
   db.all('SELECT * FROM list', (err, rows) => {
     if (err) {
       console.error(err.message);
