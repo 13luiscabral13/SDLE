@@ -84,17 +84,39 @@ app.get('/lists', (req, res) => { // reads all the Users shopping lists
 
 // get a list
 app.get('/lists/:url', (req, res) => {
-  const filePath = path.join(__dirname, '../src/shopping_list.html');
-  fs.readFile(filePath, 'utf8', (err, data) => {
+  const fullUrl = req.params.url;
+  const url = fullUrl.replace(/^\/lists\//, '');
+  // Fetch list name based on the provided URL
+  db.get('SELECT name FROM list WHERE url = ?', [url], (err, list) => {
     if (err) {
-      res.status(500).send('Error loading index.html');
-    } else {
-      // Replace {{PORT}} with the actual port
-      const htmlContent = data.toString().replace('{{PORT}}', port);
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(htmlContent);
+      console.error(err.message);
+      return res.status(500).json({ error: 'An error occurred while fetching data.' });
     }
+
+    if (!list) {
+      return res.status(404).json({ error: 'List not found.' });
+    }
+
+    // Fetch rows based on the list URL
+    db.all('SELECT * FROM item WHERE list_url = ?', [url], (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: 'An error occurred while fetching data.' });
+      }
+
+      console.log("Fetched url: ", url);
+      console.log(rows);
+
+      // Create a response object with list name and rows
+      const response = {
+        listName: list.name,
+        items: rows
+      };
+
+      res.status(200).json(response);
+    });
   });
+
 });
 
 

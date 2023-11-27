@@ -18,14 +18,19 @@
     <div id="modal" hidden>
         <form id="new-list-form">
             <h3>New Shopping List</h3>
-            <label for="course-name">Type of Service Offered:</label>
             <input type="text" class="list-name" name="shopping-list-name">
             <div id="modal-btns">
                 <button type="button" id="cancel-btn">Cancel</button>
                 <button type="submit" id="create-list-btn">Create List</button>
             </div>
         </form>
-      </div>
+    </div>
+    <div id="thisShoppingList" hidden>
+        <form>
+        <h3 id="this-list-name"></h3>
+        <ul id="this-list-items"></ul>
+        </form>
+    </div>
     <div class="shopping-lists">
     </div>  
     
