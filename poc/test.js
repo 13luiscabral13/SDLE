@@ -6,9 +6,11 @@ import sqlite3 from 'sqlite3';
 // const db = new sqlite3.Database('../database/mock.db');
 // c.load(db);
 
-const cart = new Cart('5002');
-const url = cart.createList('a minha lista com nome lindo');
+const cart1 = new Cart('5002');
+const cart2 = new Cart('5003');
+
+const url = cart1.createList('a minha lista com nome lindo');
 console.log(url);
-
-
-console.log(cart.getList(url))
+console.log(cart1.getList(url))
+console.log(cart1.deleteList(url))
+console.log(cart1.deleteList("url que não existe"))

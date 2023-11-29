@@ -1,4 +1,5 @@
 import { AWORMap } from "./AWORMap.js";
+import { v4 as uuidv4 } from 'uuid';
 
 class Cart {
 
@@ -15,23 +16,27 @@ class Cart {
     }
 
     createList(name) {
-        const url = this.getURL(name);
+        const url = uuidv4();;
         let aormap = new AWORMap(this.owner, name, url);
         this.lists.set(url, aormap);
         return url;
     }
 
     deleteList(url) {
-        // if owner = list.owner
-        // this.lists.get(url) = null 
+        let list = this.lists.get(url);
+        if (list) { 
+            if (list.owner === this.owner) {
+                this.lists.set(url, null);
+                return "List deleted";
+            } else {
+                return "You don't have permissions to delete this list"
+            }
+        }
+        return "This list doesn't exists in your system";
     }
 
     getList(url) {
         return this.lists.get(url);
-    }
-
-    getURL(listName) {
-        return 'mockURL'; // TODO asap
     }
 }
 
