@@ -3,9 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 class Cart {
 
-    // this.lists = [<url, null | AWORMap>, ...]
-    // if null -> deleted
-
     constructor(owner) {
         this.owner = owner;
         this.lists = new Map();
@@ -16,9 +13,9 @@ class Cart {
     }
 
     createList(name) {
-        const url = uuidv4();;
-        let aormap = new AWORMap(this.owner, name, url);
-        this.lists.set(url, aormap);
+        const url = uuidv4();
+        let list = new AWORMap(this.owner, name, url);
+        this.lists.set(url, list);
         return url;
     }
 
@@ -37,6 +34,14 @@ class Cart {
 
     getList(url) {
         return this.lists.get(url);
+    }
+
+    createItem(url, itemName) {
+        let list = this.lists.get(url);
+        if (list) {
+            return list.createItem(itemName);
+        }
+        return "This list doesn't exists in your system";
     }
 }
 
