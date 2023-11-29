@@ -21,7 +21,18 @@ class AWORMap {
     }
 
     deleteItem(itemName) {
-        // TODO -> more complex
+        return "TODO ASAP";
+    }
+
+    updateQuantities(itemName, current, total) {
+        let item = this.items.get(itemName);
+        if (item) {
+            let response = '';
+            response += item[0].updateQuantity(current);
+            response += item[1].updateQuantity(total);
+            return response;
+        }
+        return "This item doesn't exist in this list";
     }
 }
 

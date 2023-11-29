@@ -9,7 +9,13 @@ class GCounter {
         this.quantity = 0;
     }
 
-    
+    updateQuantity(newQuantity) {
+        if (this.quantity <= newQuantity) {
+            this.quantity = newQuantity;
+            return `Quantity of ${this.type} ${this.itemName} has been updated\n`;
+        }
+        return "Invalid update. This counter only increments";
+    }
 }
 
 export { GCounter }

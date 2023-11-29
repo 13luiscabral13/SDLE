@@ -9,12 +9,9 @@ import util from 'util';
 
 const cart = new Cart('5002');
 const url1 = cart.createList('List A');
-const url2 = cart.createList('List B');
 
 console.log(cart.createItem(url1, "bananas"));
-console.log(cart.createItem(url2, "bananas"));
 console.log(cart.createItem(url1, "cenouras"));
-console.log(cart.createItem(url2, "cenouras"));
+console.log(cart.updateQuantities(url1, "bananas", 6, 7));
 
-console.log(util.inspect(cart, { showHidden: false, depth: null }));
-
+// console.log(util.inspect(cart, { showHidden: false, depth: null }));

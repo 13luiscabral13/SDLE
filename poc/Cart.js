@@ -29,7 +29,7 @@ class Cart {
                 return "You don't have permissions to delete this list"
             }
         }
-        return "This list doesn't exists in your system";
+        return "This list doesn't exist in your system";
     }
 
     getList(url) {
@@ -41,7 +41,26 @@ class Cart {
         if (list) {
             return list.createItem(itemName);
         }
-        return "This list doesn't exists in your system";
+        return "This list doesn't exist in your system";
+    }
+
+    deleteItem(url, itemName) {
+        let list = this.lists.get(url);
+        if (list) {
+            return list.deleteItem(itemName);
+        }
+        return "This list doesn't exist in your system";
+    }
+
+    updateQuantities(url, itemName, current, total) {
+        let list = this.lists.get(url);
+        if (list) {
+            if (current > total) {
+                return "Current must be less or equal to total";
+            }
+            return list.updateQuantities(itemName, current, total);
+        }
+        return "This list doesn't exist in your system";
     }
 }
 
