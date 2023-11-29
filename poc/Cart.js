@@ -8,15 +8,57 @@ class Cart {
         this.lists = new Map();
     }
 
-    load(db) {
-        // TODO
-    }
+    async load(db) {
+        return new Promise((resolve, reject) => {
 
-    createList(name) {
-        const url = uuidv4();
-        let list = new AWORMap(this.owner, name, url);
-        this.lists.set(url, list);
-        return url;
+            let completedSteps = 0;
+            const checkCompletion = () => {
+                completedSteps++;
+                if (completedSteps === 2) {
+                    resolve();
+                }
+            };
+    
+            // Load lists
+            db.all('SELECT * FROM list', (err, rows) => {
+                if (err) {
+                    console.error(err.message);
+                    reject(err);
+                    return;
+                }
+    
+                for (let row of rows) {
+                    this.createList(row.name, row.url);
+                }
+    
+                checkCompletion();
+            });
+    
+            // Load items
+            db.all('SELECT list.name AS listname, item.* FROM list JOIN item ON list.url = item.list_url', (err, rows) => {
+                if (err) {
+                    console.error(err.message);
+                    reject(err);
+                    return;
+                }
+    
+                for (let row of rows) {
+                    this.createItem(row.list_url, row.name);
+                    this.updateQuantities(row.list_url, row.name, row.current, row.quantity);
+                }
+    
+                checkCompletion();
+            });
+        });
+    }
+    
+    
+
+    createList(name, url) {
+        const id = url ?? uuidv4();
+        let list = new AWORMap(this.owner, name, id);
+        this.lists.set(id, list);
+        return id;
     }
 
     deleteList(url) {
