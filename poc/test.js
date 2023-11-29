@@ -1,30 +1,14 @@
-import { CRDT } from "./CRDT.js";
+import { Cart } from "./Cart.js";
 import sqlite3 from 'sqlite3';
 
 // Instanciation
-let c = new CRDT('ze');
-const db = new sqlite3.Database('../database/mock.db');
-c.load(db);
+// let c = new CRDT('ze');
+// const db = new sqlite3.Database('../database/mock.db');
+// c.load(db);
 
-console.log(c.getState())
+const cart = new Cart('5002');
+const url = cart.createList('a minha lista com nome lindo');
+console.log(url);
 
-/*
-c.createList("url_da_lista_A", "Lista A");
-c.createList("url_da_lista_B", "Lista B");
-console.log("-------------------");
-console.log(c.getDeltaState());
 
-c.createItem("url_da_lista_A", "maças", 4, 2);
-console.log("-------------------");
-console.log(c.getDeltaState());
-
-c.deleteItem("url_da_lista_A", "maças");
-console.log("-------------------");
-console.log(c.getDeltaState());
-
-console.log("-------------------");
-console.log(c.getDeltaState());
-
-console.log("-------------------");
-console.log(c.getState());
-*/
+console.log(cart.getList(url))
