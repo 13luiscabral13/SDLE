@@ -28,7 +28,7 @@ class AWORMap {
         let item = this.items.get(itemName);
         if (item) {
             let response = '';
-            response += item[0].updateQuantity(current);
+            response += item[0].updateQuantity(current) + '\n';
             response += item[1].updateQuantity(total);
             return response;
         }

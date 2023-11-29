@@ -13,5 +13,6 @@ const url1 = cart.createList('List A');
 console.log(cart.createItem(url1, "bananas"));
 console.log(cart.createItem(url1, "cenouras"));
 console.log(cart.updateQuantities(url1, "bananas", 6, 7));
+console.log(cart.updateQuantities(url1, "bananas", 1, 2));
 
-// console.log(util.inspect(cart, { showHidden: false, depth: null }));
+console.log(util.inspect(cart, { showHidden: false, depth: null }));
