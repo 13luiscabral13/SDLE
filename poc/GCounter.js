@@ -14,7 +14,7 @@ class GCounter {
             this.quantity = newQuantity;
             return `Quantity of ${this.type} ${this.itemName} has been updated`;
         }
-        return "Invalid update. This counter only increments";
+        return "Error: Invalid update, this counter only increments";
     }
 }
 

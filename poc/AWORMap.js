@@ -17,7 +17,7 @@ class AWORMap {
             this.items.set(itemName, [counter1, counter2])
             return "Item successfully added"
         }
-        return "This item already exists in this list";
+        return "Error: This item already exists in this list";
     }
 
     deleteItem(itemName) {
@@ -32,7 +32,7 @@ class AWORMap {
             response += item[1].updateQuantity(total);
             return response;
         }
-        return "This item doesn't exist in this list";
+        return "Error: This item doesn't exist in this list";
     }
 }
 

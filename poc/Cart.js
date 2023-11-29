@@ -22,13 +22,14 @@ class Cart {
             // Load lists
             db.all('SELECT * FROM list', (err, rows) => {
                 if (err) {
-                    console.error(err.message);
+                    console.error("Error: " + err.message);
                     reject(err);
                     return;
                 }
-    
+                
                 for (let row of rows) {
                     this.createList(row.name, row.url);
+                    if (row.deleted) this.deleteList(row.url);
                 }
     
                 checkCompletion();
@@ -37,7 +38,7 @@ class Cart {
             // Load items
             db.all('SELECT list.name AS listname, item.* FROM list JOIN item ON list.url = item.list_url', (err, rows) => {
                 if (err) {
-                    console.error(err.message);
+                    console.error("Error: " + err.message);
                     reject(err);
                     return;
                 }
@@ -45,6 +46,7 @@ class Cart {
                 for (let row of rows) {
                     this.createItem(row.list_url, row.name);
                     this.updateQuantities(row.list_url, row.name, row.current, row.quantity);
+                    if (row.deleted) this.deleteItem(row.list_url, row.name);
                 }
     
                 checkCompletion();
@@ -52,8 +54,6 @@ class Cart {
         });
     }
     
-    
-
     createList(name, url) {
         const id = url ?? uuidv4();
         let list = new AWORMap(this.owner, name, id);
@@ -68,10 +68,10 @@ class Cart {
                 this.lists.set(url, null);
                 return "List deleted";
             } else {
-                return "You don't have permissions to delete this list"
+                return "Error: You don't have permissions to delete this list"
             }
         }
-        return "This list doesn't exist in your system";
+        return "Error: This list doesn't exist in your system";
     }
 
     getList(url) {
@@ -83,7 +83,7 @@ class Cart {
         if (list) {
             return list.createItem(itemName);
         }
-        return "This list doesn't exist in your system";
+        return "Error: This list doesn't exist in your system";
     }
 
     deleteItem(url, itemName) {
@@ -91,18 +91,24 @@ class Cart {
         if (list) {
             return list.deleteItem(itemName);
         }
-        return "This list doesn't exist in your system";
+        return "Error: This list doesn't exist in your system";
     }
 
     updateQuantities(url, itemName, current, total) {
         let list = this.lists.get(url);
         if (list) {
             if (current > total) {
-                return "Current must be less or equal to total";
+                return "Error: Current must be less or equal to total";
             }
             return list.updateQuantities(itemName, current, total);
         }
-        return "This list doesn't exist in your system";
+        return "Error: This list doesn't exist in your system";
+    }
+
+    knownLists() {
+        return Object.keys(this.lists).filter(
+            key => this.lists[key] !== null
+        );
     }
 }
 
