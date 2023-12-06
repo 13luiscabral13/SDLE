@@ -75,7 +75,13 @@ class Cart {
     }
 
     getList(url) {
-        return this.lists.get(url)?.info();
+        const list = this.lists.get(url);
+        return list ? list.info() : {
+            url: url,
+            name: null,
+            deleted: true,
+            items: [],
+        }
     }
 
     createItem(url, itemName) {
@@ -107,7 +113,9 @@ class Cart {
 
     // Frontend
     info() {
-        return Object.keys(this.lists);
+        return Array.from(
+            this.lists.keys()).map((url) => this.getList(url)
+        )
     }
 
     // Backend

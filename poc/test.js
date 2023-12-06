@@ -7,7 +7,10 @@ const cart = new Cart('5002');
 await cart.load(db);
 
 const url = cart.createList("List A");
-console.log(url);
-console.log(cart.getList(url)); // acertar este output
+cart.createItem(url, 'Leite');
+cart.updateQuantities(url, 'Leite', 4, 9);
+console.log(cart.getList(url));
+
+cart.deleteList(url);
 
 console.log(cart.info())
