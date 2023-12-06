@@ -135,15 +135,22 @@ module.exports = class Cart {
         }
     }
 
-    toString() {
+    toString(knownLists = null) {
+
+        let listsToInclude;
+
+        if (knownLists === null) {
+            listsToInclude = Array.from(this.lists.keys());
+        } else if (Array.isArray(knownLists)) {
+            listsToInclude = knownLists.filter(url => this.lists.has(url));
+        }
+
         return JSON.stringify(
-            Array.from(
-                this.lists.keys()).map((url) => this.getListToString(url)
-            )
+            listsToInclude.map(url => this.getListToString(url))
         );
     }
 
-    merge(cartString) {
+    merge(cartString, clientRequest = false) {
         const cart = JSON.parse(cartString);
 
         for (const receivedList of cart) {
@@ -164,6 +171,13 @@ module.exports = class Cart {
             else {
                 list.merge(receivedList);
             }
+        }
+
+        if (clientRequest) {
+            const knownLists = Array.from(cart.map((entry) => entry.url));
+            return this.toString(knownLists);
+        } else {
+            return 'ACK';
         }
     }
 }
