@@ -75,7 +75,7 @@ class Cart {
     }
 
     getList(url) {
-        return this.lists.get(url);
+        return this.lists.get(url)?.info();
     }
 
     createItem(url, itemName) {
@@ -98,17 +98,27 @@ class Cart {
         let list = this.lists.get(url);
         if (list) {
             if (current > total) {
-                return "Error: Current must be less or equal to total";
+                return "Error: Current value must be less or equal to total";
             }
             return list.updateQuantities(itemName, current, total);
         }
         return "Error: This list doesn't exist in your system";
     }
 
-    knownLists() {
-        return Object.keys(this.lists).filter(
-            key => this.lists[key] !== null
-        );
+    // Frontend
+    info() {
+        return Object.keys(this.lists);
+    }
+
+    // Backend
+    toJSON() {
+        return "TODO ASAP for CRDT MERGE"
+    }
+
+    // Backend
+    merge(cart) {
+        // cart -> json format (toJSON)
+        // TODO: void
     }
 }
 

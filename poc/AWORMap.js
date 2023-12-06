@@ -34,6 +34,15 @@ class AWORMap {
         }
         return "Error: This item doesn't exist in this list";
     }
+
+    info() {
+        const items = []
+        return {
+            name: this.name,
+            url: this.url, 
+            items: items,
+        };  
+    }
 }
 
 export { AWORMap };

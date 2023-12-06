@@ -16,6 +16,10 @@ class GCounter {
         }
         return "Error: Invalid update, this counter only increments";
     }
+
+    info() {
+        return this.quantity
+    }
 }
 
 export { GCounter }
