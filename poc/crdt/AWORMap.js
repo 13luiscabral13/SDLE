@@ -74,8 +74,8 @@ class AWORMap {
             name: this.name,
             url: this.url, 
             deleted: false,
-            items: items,
             owner: this.owner,
+            items: items,
         }; 
     }
 
