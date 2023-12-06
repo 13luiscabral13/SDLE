@@ -1,6 +1,4 @@
-import { Cart } from "./crdt/Cart.js";
-import sqlite3 from 'sqlite3';
-const db = new sqlite3.Database('../database/mock.db');
+const Cart = require('./crdt/Cart.js');
 
 function test1() {
     const cart1 = new Cart('5001');

@@ -1,7 +1,7 @@
-import { AWORMap } from "./AWORMap.js";
-import { v4 as uuidv4 } from 'uuid';
+const AWORMap = require('./AWORMap.js');
+const { v4: uuidv4 } = require('uuid');
 
-class Cart {
+module.exports = class Cart {
 
     constructor(owner) {
         this.owner = owner;
@@ -166,5 +166,3 @@ class Cart {
         }
     }
 }
-
-export { Cart };

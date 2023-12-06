@@ -1,6 +1,6 @@
-import { GCounter } from "./GCounter.js";
+const GCounter = require('./GCounter.js');
 
-class AWORMap {
+module.exports = class AWORMap {
 
     constructor(owner, name, url) {
         this.owner = owner;
@@ -108,5 +108,3 @@ class AWORMap {
 
     }
 }
-
-export { AWORMap };

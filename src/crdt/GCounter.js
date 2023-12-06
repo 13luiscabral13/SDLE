@@ -1,4 +1,4 @@
-class GCounter {
+module.exports = class GCounter {
 
     constructor(owner, listName, listURL, itemName, type = 'current' | 'total') {
         this.owner = owner;
@@ -25,5 +25,3 @@ class GCounter {
         this.quantity = Math.max(this.quantity, newQuantity);
     }
 }
-
-export { GCounter }
