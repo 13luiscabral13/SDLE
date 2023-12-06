@@ -51,7 +51,8 @@ class AWORMap {
         return {
             name: this.name,
             url: this.url, 
-            deleted: false, // TODO
+            deleted: false,
+            owner: this.owner,
             items: items,
         };  
     }
@@ -72,8 +73,9 @@ class AWORMap {
         return {
             name: this.name,
             url: this.url, 
-            deleted: false, // TODO
+            deleted: false,
             items: items,
+            owner: this.owner,
         }; 
     }
 
