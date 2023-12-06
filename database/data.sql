@@ -1,4 +1,4 @@
-INSERT INTO list (name, url) VALUES ('List 1', 'url/bonito/com');
+INSERT INTO list (name, url) VALUES ('List 1', "url/bonito/com");
 INSERT INTO list (name, url) VALUES ('List 2', 'something.com/minha_lista');
 
 INSERT INTO item (name, list_url, quantity) VALUES ("Leite", "url/bonito/com", 8);
