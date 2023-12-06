@@ -36,7 +36,6 @@ class AWORMap {
     }
 
     info() {
-
         const items = Array.from(
             this.items.keys()).map((key) => {
                 const item = this.items.get(key);
@@ -57,8 +56,30 @@ class AWORMap {
         };  
     }
 
+    toString() {
+        const items = Array.from(
+            this.items.keys()).map((key) => {
+                const item = this.items.get(key);
+                return {
+                    "name": key,
+                    "deleted": false, // TODO
+                    "current": item[0].info(),
+                    "total": item[1].info(),
+                };
+            }
+        )
+
+        return {
+            name: this.name,
+            url: this.url, 
+            deleted: false, // TODO
+            items: items,
+        }; 
+    }
+
     merge(listJSON) {
-        
+        console.log("merged TODO");
+        console.log(listJSON);
     }
 }
 

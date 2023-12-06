@@ -54,9 +54,10 @@ class Cart {
         });
     }
     
-    createList(name, url) {
+    createList(name, url, owner) {
         const id = url ?? uuidv4();
-        let list = new AWORMap(this.owner, name, id);
+        const own = owner ?? this.owner;
+        let list = new AWORMap(own, name, id);
         this.lists.set(id, list);
         return id;
     }
@@ -117,32 +118,51 @@ class Cart {
         )
     }
 
-    toString() {
-        return JSON.stringify(this.info()); // será que chega? é ir testando...
+    getListToString(url) {
+        const list = this.lists.get(url);
+        return list ? list.toString() : {
+            owner: null,
+            url: url,
+            name: null,
+            deleted: true,
+            items: [],
+        }
     }
 
-    merge(cartJSON) {
-        const cart = JSON.parse(cartJSON);
+    toString() {
+        return JSON.stringify(
+            Array.from(
+                this.lists.keys()).map((url) => this.getListToString(url)
+            )
+        );
+    }
+
+    merge(cartString) {
+        const cart = JSON.parse(cartString);
 
         for (const receivedList of cart) {
             const list = this.lists.get(receivedList.url);
 
             // Crio a lista do meu lado
             if (!list) {
-                this.createList(receivedList.name, receivedList.url);
+                console.log("criou lista");
+                this.createList(receivedList.name, receivedList.url, receivedList.owner);
+
             }
 
             // Se a lista recebida foi eliminada, eliminar a minha também
-            if (receivedList.deleted && !list.deleted) { 
+            if (receivedList.deleted && !list.deleted) {
+                console.log("eliminou a lista que tinha"); 
                 this.deleteList(receivedList.url);
             }
 
             // Se não foi eliminada, dar merge aos conteúdos do meu lado
             else {
-                list.merge(receivedList.items);
+                console.log("merge numa lista que eu tinha");
+                this.lists.get(receivedList.url)
+                          .merge(receivedList.items);
             }
         }
-
     }
 }
 

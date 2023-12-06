@@ -20,4 +20,4 @@ const receivedMessage = cart1.toString();
 cart2.merge(receivedMessage);
 
 // validar que o merge das listas foi bem sucedido
-// console.log(cart2.info())
+console.log(cart2.info())
