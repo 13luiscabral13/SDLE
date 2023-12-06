@@ -2,24 +2,23 @@ const { Worker, isMainThread, parentPort, workerData } = require('worker_threads
 const zmq = require("zeromq")
 
 if (!isMainThread) {
-    let { port , crdt } = workerData;
+    let { port , cart } = workerData;
 
     const socket = new zmq.Subscriber
     socket.connect("tcp://localhost:5564")
 
     function subscribeProxy() {
-        parentPort.postMessage({ type: 'needUpdateCrdt' });
+        parentPort.postMessage({ type: 'loadCart' });
 
         // socket.subscribe(port)
-        // crdt.merge
+        // cart.merge
 
-        parentPort.postMessage({ type: 'responseFromServer', crdt: crdt})
+        parentPort.postMessage({ type: 'responseFromServer', cart: cart})
     }
 
     parentPort.on('message', (message) => {
-        if (message.type === 'updateCrdt') {
-            crdt = message.crdt;
-            //console.log("CRDT updated")
+        if (message.type === 'updateCart') {
+            cart = message.cart;
         }
     });
     

@@ -72,8 +72,8 @@ if (isMainThread) {
     var db = new sqlite3.Database(dbFile);
   }
 
-  let crdt = new CRDT();
-
+  let cart = new Cart(port);
+  cart.load(db)
   
   // GET requests
   app.get('/lists', (req, res) => { // reads all the Users shopping lists
@@ -107,31 +107,17 @@ if (isMainThread) {
   // POST Requests
   app.post('/createList', (req, res) => { // create a new shopping list
     const name = req.body.name;
-    const timestamp = new Date().toUTCString();
-    const url = generateHash(name, timestamp);
-
-    // insert a new list in local db
-    db.run('INSERT INTO list (name, url) VALUES (?, ?)', [name, url], function (err) {
-      if (err) {
-        console.error(err.message);
-        res.status(500).json({ message: 'Error Creating a List!'});
-      } else {
-        res.status(200).json({ message: 'List created!'});
-      }
-    });
+    
+    cart.createList(name)
   });
 
   app.post('/deleteList', (req, res) => { // delete the list with that url
     const url = req.body.url;
     
-    db.run('DELETE FROM list WHERE url = ?', [url], function (err) {
-      if (err) {
-        console.error(err.message);
-        res.status(500).json({ message: 'Error Deleting the List!'});
-      } else {
-        res.status(200).json({ message: `List with URL ${url} has been deleted!`});
-      }
-    });
+    const response = cart.deleteList(url)
+
+    console.log(response)
+    res.status(200).json(response);
   });
 
   app.listen(port, () => {
@@ -148,13 +134,11 @@ if (isMainThread) {
     return hash.digest('hex');
   }
 
-  const dbUpdateThread = new Worker('./workers/db_thread.js', { workerData: { crdt: crdt } });
+  const dbUpdateThread = new Worker('./workers/db_thread.js');
 
   // Handle messages from the database update thread
   dbUpdateThread.on('message', (message) => {
-    if(message.type === 'needUpdateCrdt'){
-      dbUpdateThread.postMessage({ type: 'updateCrdt', crdt: crdt });
-    } else if (message.type === 'dbUpdateComplete') {
+    if (message.type === 'dbUpdateComplete') {
       // Database update is complete, handle accordingly
       console.log('Database update complete');
     } else {
@@ -163,21 +147,27 @@ if (isMainThread) {
     }
   });
 
-  const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, crdt: crdt } });
+  setInterval(check_cart_isDirty, 5000)
+
+  const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart } });
 
   // Handle messages from the database update thread
   cloudThread.on('message', (message) => {
-    if(message.type === 'needUpdateCrdt'){
-      cloudThread.postMessage({ type: 'updateCrdt', crdt: crdt });
+    if(message.type === 'loadCart'){
+      cloudThread.postMessage({ type: 'updateCart', cart: cart });
     } else if(message.type === 'responseFromServer') {
-      // Update crdt
-      // crdt = message.crdt
-      console.log('Server response');
+      cart.merge(message.cart)
     } else {
       // Handle other types of messages from the database update thread
       console.log('Message from cloud thread:', message);
     }
   });
+
+  function check_cart_isDirty() {
+    if(cart.isDirty()) {
+      dbUpdateThread.postMessage({ type: 'updateDB', cart: cart });
+    }
+  }
 }
 
 /* 
