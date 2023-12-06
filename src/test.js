@@ -254,6 +254,86 @@ function test6() {
     console.log(cart2.toString());
 }
 
+function test7() {
+    const cart1 = new Cart('5001');
+    const cart2 = new Cart('5002');
+    
+    // inicialmente cart 1 tem a lista remota
+    const url = cart1.createList("List 1");
+    cart1.createItem(url, 'Leite');
+    cart1.updateQuantities(url, 'Leite', 2, 10);
+    cart1.createItem(url, 'Feijao');
+    cart1.updateQuantities(url, 'Feijao', 1, 9);
+    
+    // ... e cart2 acabou de receber o url
+    cart2.createList('unknown', url, 'unknown');
+
+    console.log("Cart 1 initial state");
+    console.log(cart1.toString());
+    console.log("Cart 2 initial state");
+    console.log(cart2.toString());
+    
+    // cart 1 manda a sua informação
+    const receivedMessage = cart1.toString();
+    cart2.merge(receivedMessage);
+    
+    // validar que o merge das listas em cart 2 foi bem sucedido
+    console.log("\nCart 1 intermediate state");
+    console.log(cart1.toString());
+    console.log("Cart 2 intermediate state");
+    console.log(cart2.toString());
+    
+    // agora cart 2 responde com a sua estrutura interna
+    const sendMessage = cart2.toString();
+    cart1.merge(sendMessage);
+    
+    // validar que os dois nós ficam com o mesmo conteúdo
+    console.log("\nCart 1 final state");
+    console.log(cart1.toString());
+    console.log("Cart 2 final state");
+    console.log(cart2.toString());
+}
+
+function test8() {
+    const cart1 = new Cart('5001');
+    const cart2 = new Cart('5002');
+    
+    // inicialmente cart 2 tem a lista remota
+    const url = cart2.createList("List 1");
+    cart2.createItem(url, 'Leite');
+    cart2.updateQuantities(url, 'Leite', 2, 10);
+    cart2.createItem(url, 'Feijao');
+    cart2.updateQuantities(url, 'Feijao', 1, 9);
+    
+    // ... e cart1 acabou de receber o url
+    cart1.createList('unknown', url, 'unknown');
+
+    console.log("Cart 1 initial state");
+    console.log(cart1.toString());
+    console.log("Cart 2 initial state");
+    console.log(cart2.toString());
+    
+    // cart 1 manda a sua informação
+    const receivedMessage = cart1.toString();
+    cart2.merge(receivedMessage);
+    
+    // validar que o merge das listas em cart 2 foi bem sucedido
+    console.log("\nCart 1 intermediate state");
+    console.log(cart1.toString());
+    console.log("Cart 2 intermediate state");
+    console.log(cart2.toString());
+    
+    // agora cart 2 responde com a sua estrutura interna
+    const sendMessage = cart2.toString();
+    cart1.merge(sendMessage);
+    
+    // validar que os dois nós ficam com o mesmo conteúdo
+    console.log("\nCart 1 final state");
+    console.log(cart1.toString());
+    console.log("Cart 2 final state");
+    console.log(cart2.toString());
+}
+
 function test() {
     // test1(); // merge de duas listas diferentes, ambas não-deleted
     // test2(); // merge de duas listas diferentes, a primeira foi deletada
@@ -261,6 +341,8 @@ function test() {
     // test4();// os dois carts têm a mesma lista e os mesmos itens, o primeiro deles dá update ao item
     // test5(); // os dois carts têm a mesma lista e os mesmos itens, o segundo deles dá update ao item
     // test6(); // os dois carts têm a mesma lista e os mesmos itens, mas ambos dão update aos mesmos itens e tentam sincronizar
+    // test7(); // o cart1 têm a Lista 1, o cart2 remoto acaba de ter o url da Lista 1, quer saber o seu conteúdo
+    // test8(); // o cart1 acaba de ter o url da Lista 1 que está só em modo remoto no cart 2, quer puxar o seu conteúdo
 }
 
 test()

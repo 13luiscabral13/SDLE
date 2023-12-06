@@ -80,7 +80,11 @@ module.exports = class AWORMap {
     }
 
     merge(list) {
-        for (const receivedItem of list) {
+
+        this.name = this.name === 'unknown' ? list.name : this.name;
+        this.owner = this.owner === 'unknown' ? list.owner : this.owner;
+
+        for (const receivedItem of list.items) {
             const item = this.items.get(receivedItem.name);
 
             // o item não foi eliminado dos dois lados, apenas um update é necessário

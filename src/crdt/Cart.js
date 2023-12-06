@@ -55,7 +55,7 @@ module.exports = class Cart {
         });
     }
     
-    createList(name, url, owner) {
+    createList(name, url = null, owner = null) {
         const id = url ?? uuidv4();
         const own = owner ?? this.owner;
         let list = new AWORMap(own, name, id);
@@ -84,6 +84,7 @@ module.exports = class Cart {
         return list ? list.info() : {
             url: url,
             name: null,
+            owner: null,
             deleted: true,
             items: [],
         }
@@ -161,7 +162,7 @@ module.exports = class Cart {
 
             // Se não foi eliminada, dar merge aos conteúdos do meu lado
             else {
-                list.merge(receivedList.items);
+                list.merge(receivedList);
             }
         }
     }
