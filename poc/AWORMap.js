@@ -56,6 +56,10 @@ class AWORMap {
             items: items,
         };  
     }
+
+    merge(listJSON) {
+        
+    }
 }
 
 export { AWORMap };

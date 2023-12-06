@@ -111,22 +111,38 @@ class Cart {
         return "Error: This list doesn't exist in your system";
     }
 
-    // Frontend
     info() {
         return Array.from(
             this.lists.keys()).map((url) => this.getList(url)
         )
     }
 
-    // Backend
-    toJSON() {
-        return "TODO ASAP for CRDT MERGE"
+    toString() {
+        return JSON.stringify(this.info()); // será que chega? é ir testando...
     }
 
-    // Backend
-    merge(cart) {
-        // cart -> json format (toJSON)
-        // TODO: void
+    merge(cartJSON) {
+        const cart = JSON.parse(cartJSON);
+
+        for (const receivedList of cart) {
+            const list = this.lists.get(receivedList.url);
+
+            // Crio a lista do meu lado
+            if (!list) {
+                this.createList(receivedList.name, receivedList.url);
+            }
+
+            // Se a lista recebida foi eliminada, eliminar a minha também
+            if (receivedList.deleted && !list.deleted) { 
+                this.deleteList(receivedList.url);
+            }
+
+            // Se não foi eliminada, dar merge aos conteúdos do meu lado
+            else {
+                list.merge(receivedList.items);
+            }
+        }
+
     }
 }
 
