@@ -20,6 +20,10 @@ class GCounter {
     info() {
         return this.quantity
     }
+
+    merge(newQuantity) {
+        this.quantity = Math.max(this.quantity, newQuantity);
+    }
 }
 
 export { GCounter }

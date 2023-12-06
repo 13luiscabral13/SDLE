@@ -77,9 +77,33 @@ class AWORMap {
         }; 
     }
 
-    merge(listJSON) {
-        console.log("merged TODO");
-        console.log(listJSON);
+    merge(list) {
+        for (const receivedItem of list) {
+            const item = this.items.get(receivedItem.name);
+
+            // o item não foi eliminado dos dois lados, apenas um update é necessário
+            if (item && !receivedItem.deleted && !item.deleted) {
+                item[0].merge(receivedItem.current);
+                item[1].merge(receivedItem.total);
+            }
+
+            // o item é novo nesta lista, adiciona-o
+            else if (!item && !receivedItem.deleted) {
+                this.createItem(receivedItem.name);
+                this.updateQuantities(receivedItem.name, receivedItem.current, receivedItem.total);
+            }
+
+            // recebeu um update num item que já estava eliminado aqui
+            else if (0) {
+                // TODO
+            }
+
+            // recebeu que alguém eliminou um item que ainda não estava eliminado aqui
+            else if (0) {
+                // TODO
+            }
+        }
+
     }
 }
 

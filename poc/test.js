@@ -18,6 +18,8 @@ const receivedMessage = cart1.toString();
 
 // cart 2 recebe a informação de um nó
 cart2.merge(receivedMessage);
+cart2.merge(receivedMessage);
+cart2.merge(receivedMessage);
 
 // validar que o merge das listas foi bem sucedido
 console.log(cart2.info())
