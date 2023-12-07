@@ -1,4 +1,4 @@
-const CRDT = require('./CRDT.js');
+const Cart = require('./crdt/Cart.js');
 const { Worker, isMainThread } = require('worker_threads');
 
 if (isMainThread) {
@@ -124,17 +124,7 @@ if (isMainThread) {
     console.log(`Web interface is running on http://localhost:${port}`);
   });
 
-  // Auxiliar Functions
-  function generateHash(title, timestamp) {
-    const randomNum = Math.floor(Math.random() * 100000); // Generate a random number
-    const combinedInput = title + timestamp.toString() + randomNum.toString();
-    
-    const hash = crypto.createHash('md5');
-    hash.update(combinedInput);
-    return hash.digest('hex');
-  }
-
-  const dbUpdateThread = new Worker('./workers/db_thread.js');
+  /*const dbUpdateThread = new Worker('./workers/db_thread.js');
 
   // Handle messages from the database update thread
   dbUpdateThread.on('message', (message) => {
@@ -147,7 +137,7 @@ if (isMainThread) {
     }
   });
 
-  setInterval(check_cart_isDirty, 5000)
+  setInterval(check_cart_isDirty, 5000)*/
 
   const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart } });
 
@@ -156,33 +146,16 @@ if (isMainThread) {
     if(message.type === 'loadCart'){
       cloudThread.postMessage({ type: 'updateCart', cart: cart });
     } else if(message.type === 'responseFromServer') {
-      cart.merge(message.cart)
+      //cart.merge(message.cart.toString())
     } else {
       // Handle other types of messages from the database update thread
       console.log('Message from cloud thread:', message);
     }
   });
 
-  function check_cart_isDirty() {
+  /*function check_cart_isDirty() {
     if(cart.isDirty()) {
       dbUpdateThread.postMessage({ type: 'updateDB', cart: cart });
     }
-  }
+  }*/
 }
-
-/* 
-- change the get requests to the crdt
-- add to the post resquests the write to crdt
-
-create 2 threads
-  - Create CRDT with db content
-  - one for handling client requests
-
-another for server comunication
-  - establish proxy connection
-    - every x seconds check crdt for changed content
-    - send server every x contents those changes and get the server side content
-*/
-
-
-
