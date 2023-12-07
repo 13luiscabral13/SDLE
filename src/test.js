@@ -1,4 +1,15 @@
 const Cart = require('./crdt/Cart.js');
+const sqlite3 = require('sqlite3');
+
+async function test0() {
+
+    const db = new sqlite3.Database('../database/mock.db');
+    const cart1 = new Cart('5001');
+    await cart1.load(db);
+
+    console.log("Load da db mock");
+    console.log(cart1.toString());
+}
 
 function test1() {
     const cart1 = new Cart('5001');
@@ -401,16 +412,17 @@ function test10() {
 }
 
 function test() {
-    // test1(); // merge de duas listas diferentes, ambas não-deleted
-    // test2(); // merge de duas listas diferentes, a primeira foi deletada
-    // test3(); // merge de duas listas diferentes, a segunda foi eliminada
-    // test4(); // os dois carts têm a mesma lista e os mesmos itens, o primeiro deles dá update ao item
-    // test5(); // os dois carts têm a mesma lista e os mesmos itens, o segundo deles dá update ao item
-    // test6(); // os dois carts têm a mesma lista e os mesmos itens, mas ambos dão update aos mesmos itens e tentam sincronizar
-    // test7(); // o cart1 têm a Lista 1, o cart2 remoto acaba de ter o url da Lista 1, quer saber o seu conteúdo
-    // test8(); // o cart1 acaba de ter o url da Lista 1 que está só em modo remoto no cart 2, quer puxar o seu conteúdo
-    // test9(); // merge na ring: server para server, expecta receber um "ACK"
-    test10() // merge após proxy: client para server, expecta receber as suas listas conhecidas atualizadas
+    test0();  // load da base de dados com itens
+    // test1();  // merge de duas listas diferentes, ambas não-deleted
+    // test2();  // merge de duas listas diferentes, a primeira foi deletada
+    // test3();  // merge de duas listas diferentes, a segunda foi eliminada
+    // test4();  // os dois carts têm a mesma lista e os mesmos itens, o primeiro deles dá update ao item
+    // test5();  // os dois carts têm a mesma lista e os mesmos itens, o segundo deles dá update ao item
+    // test6();  // os dois carts têm a mesma lista e os mesmos itens, mas ambos dão update aos mesmos itens e tentam sincronizar
+    // test7();  // o cart1 têm a Lista 1, o cart2 remoto acaba de ter o url da Lista 1, quer saber o seu conteúdo
+    // test8();  // o cart1 acaba de ter o url da Lista 1 que está só em modo remoto no cart 2, quer puxar o seu conteúdo
+    // test9();  // merge na ring: server para server, expecta receber um "ACK"
+    // test10(); // merge após proxy: client para server, expecta receber as suas listas conhecidas atualizadas
 }
 
 test()

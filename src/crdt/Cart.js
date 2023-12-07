@@ -29,7 +29,7 @@ module.exports = class Cart {
                 }
                 
                 for (let row of rows) {
-                    this.createList(row.name, row.url);
+                    this.createList(row.name, row.url, row.owner);
                     if (row.deleted) this.deleteList(row.url);
                 }
     
