@@ -2,8 +2,15 @@ const express = require('express');
 const fs = require('fs');
 const http = require('http');
 const WebSocket = require('ws');
+const zmq = require('zeromq');
+const { Worker } = require('worker_threads');
 
-const httpPort = 5000;
+const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+
+const httpPort = process.argv[2] || 5000;
+const increment = process.argv[3] || 1; //Só para teste
+let cart = increment;
+
 const app = express(); // Create an Express application instance.
 app.use(express.json()); // to remove when json file is removed
 
@@ -54,3 +61,28 @@ wss.on('connection', function connection(ws, req) { // Creates a WebSocket with 
 server.listen(httpPort, function() {
   console.log(`Server is listening on ${httpPort}!`);
 });
+
+// Worker thread responsável por enviar updates aos vizinhos e receber updates vindos dos outros servers
+const updateWorker = new Worker('./workers/servers_thread.js', { workerData: { httpPort } });
+
+updateWorker.on('message', (message) => {
+  if(message.type === 'updateCart') {
+    mergeCart(message.cart);
+  }
+})
+
+function mergeCart(receivedCart) {
+  cart = cart + parseInt(receivedCart, 10) + increment;
+  console.log(`Current value: ${cart}\n`);
+}
+
+//De 5 em 5 segundos, server manda updates para os seus vizinhos
+async function sendingUpdates() {
+  while(true) {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    updateWorker.postMessage({ type: 'updateNeighbors', cart: cart});
+  }
+}
+
+sendingUpdates();
