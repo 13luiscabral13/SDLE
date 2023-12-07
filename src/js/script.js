@@ -787,8 +787,28 @@ function modalShoppingList(data) {
   formInsideShoppingList.appendChild(checkButton);
 
   checkButton.addEventListener("click", function () {
-    changes = compareArrays(initialArray, updatedArray);
-    console.log(changes);
+    allchanges = compareArrays(initialArray, updatedArray);
+    console.log(allchanges);
+    const jsonToSend = {
+      addedChanges: changes    
+    }
+    console.log(jsonToSend);
+    fetch(url + '/changeItems', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonToSend)
+    })
+      .then(response => response.json())
+      .then(json => {
+        if ('error' in json) {
+          console.log('Error adding the table', error);
+        } else {
+          console.log('Successfully Received the Changes');
+        }
+      })
+      .catch(error => console.log(error));
   });
 
   shopList.hidden = false;

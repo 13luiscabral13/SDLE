@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
+const Cart = require('./crdt/Cart.js');
 
 const app = express();
 app.use(express.json());
@@ -149,6 +150,12 @@ app.post('/deleteList', (req, res) => { // delete the list with that url
   });
 });
 
+app.post('/changeItems', (req, res) => {
+  const items = req.body.changes;
+  console.log("Received: ", items);
+  console.log("Items: ", items);
+  res.status(200).json({message: `Items Received`});
+});
 
 app.listen(port, () => {
   console.log(`Web interface is running on http://localhost:${port}`);
