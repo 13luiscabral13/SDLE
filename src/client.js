@@ -123,11 +123,10 @@ app.get('/lists/:url', (req, res) => {
 // POST Requests
 app.post('/createList', (req, res) => { // create a new shopping list
   const name = req.body.name;
-  const timestamp = new Date().toUTCString();
-  const url = generateHash(name, timestamp);
+  const url = generateHash(name);
 
   // insert a new list in local db
-  db.run('INSERT INTO list (name, timestamp, url) VALUES (?, ?, ?)', [name, timestamp, url], function (err) {
+  db.run('INSERT INTO list (name, url) VALUES (?, ?)', [name, url], function (err) {
     if (err) {
       console.error(err.message);
       res.status(500).json({ message: 'Error Creating a List!'});
@@ -157,9 +156,9 @@ app.listen(port, () => {
 
 
 // Auxiliar Functions
-function generateHash(title, timestamp) {
+function generateHash(title) {
   const randomNum = Math.floor(Math.random() * 100000); // Generate a random number
-  const combinedInput = title + timestamp.toString() + randomNum.toString();
+  const combinedInput = title + randomNum.toString();
   
   const hash = crypto.createHash('md5');
   hash.update(combinedInput);

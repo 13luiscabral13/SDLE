@@ -10,6 +10,7 @@
     <p id="port" style="display: none;">{{PORT}}</p>
     <header>
         <button id="add-list">Create List</button>
+        <button id="join-list">Join List</button>
         <div class="horizontal-line"></div>
     </header>
     <div>
@@ -22,6 +23,16 @@
             <div id="modal-btns">
                 <button type="button" id="cancel-btn">Cancel</button>
                 <button type="submit" id="create-list-btn">Create List</button>
+            </div>
+        </form>
+    </div>
+    <div id="modal_join" hidden>
+        <form id="join-list-form">
+            <h3>Join Shopping List</h3>
+            <input type="text" class="list-name" name="shopping-list-name">
+            <div id="modal-btns">
+                <button type="button" id="cancel-join-btn">Cancel</button>
+                <button type="submit" id="join-list-btn">Join List</button>
             </div>
         </form>
     </div>
