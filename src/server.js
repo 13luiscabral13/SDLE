@@ -78,11 +78,7 @@ function mergeCart(receivedCart) {
 
 //De 5 em 5 segundos, server manda updates para os seus vizinhos
 async function sendingUpdates() {
-  while(true) {
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    updateWorker.postMessage({ type: 'updateNeighbors', cart: cart});
-  }
+  updateWorker.postMessage({ type: 'updateNeighbors', cart: cart});
 }
 
-sendingUpdates();
+setInterval(sendingUpdates, 7000);

@@ -1,6 +1,6 @@
 {
-    "numServers": 3,
-    "servers": [5000, 5001, 5002],
+    "numServers": 4,
+    "servers": [5000, 5001, 5002, 5003],
     "baseHost": 5000,
     "neighbors": 2
 }

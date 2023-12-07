@@ -3,6 +3,9 @@ const zmq = require('zeromq');
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 
+let skip = 0;
+let updated = 0;
+
 //Enviar cart para um vizinho
 async function updateNeighboor(neighborPort, cart) {
     //Servidor atual conecta-se ao vizinho
@@ -15,8 +18,8 @@ async function updateNeighboor(neighborPort, cart) {
 
     // Define um timeout para esperar pela resposta do servidor vizinho
     const timeoutId = setTimeout(() => {
+      skip++;  
       console.error(`Timeout waiting for ACK from server ${neighborPort}`);
-      return -1;
     }, 3000);
     
     // Espera pela resposta do servidor vizinho
@@ -24,26 +27,21 @@ async function updateNeighboor(neighborPort, cart) {
       const [response] = await requester.receive();
       clearTimeout(timeoutId);
       console.log(`Received ACK from server ${neighborPort}`);
+      updated++;
       requester.close();
       break;
     }
-
-    return 0;
 }
 
 //Enviar cart para todos os vizinhos
 async function updateAllNeighboors(httpPort, cart) {
-    let skip = 0;
-    for(let i=0; i<config.neighbors; i++) {
+    skip = 0;
+    updated = 0;
+    while (updated !== config.neighbors) {
         let pos = config.servers.indexOf(parseInt(httpPort));
-        let neighbor = config.servers[(pos + i + skip + 1) % config.servers.length];
+        let neighbor = config.servers[(pos + updated + skip + 1) % config.servers.length];
 
         const success = await updateNeighboor(neighbor, cart);
-
-        if(success === -1) {
-            console.log("Failed to update neighbor");
-            skip += 1;
-        }
     }
 }
 
@@ -76,7 +74,9 @@ if (!isMainThread) {
 
     parentPort.on('message', async (message) => {
         if(message.type === "updateNeighbors") {
-            updateAllNeighboors(httpPort, message.cart);
+            console.log("------- INIT UPDATE NEIGHBORS ------");
+            await updateAllNeighboors(httpPort, message.cart);
+            console.log("------ FINISH UPDATE NEIGHBORS -----");
         }
     })
 }
