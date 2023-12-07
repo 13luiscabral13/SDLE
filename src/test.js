@@ -412,7 +412,7 @@ function test10() {
 }
 
 function test() {
-    test0();  // load da base de dados com itens
+    // test0();  // load da base de dados local
     // test1();  // merge de duas listas diferentes, ambas não-deleted
     // test2();  // merge de duas listas diferentes, a primeira foi deletada
     // test3();  // merge de duas listas diferentes, a segunda foi eliminada
