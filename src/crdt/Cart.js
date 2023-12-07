@@ -6,6 +6,7 @@ module.exports = class Cart {
     constructor(owner) {
         this.owner = owner;
         this.lists = new Map();
+        this.hasChange = true;
     }
 
     // Load old data from local database
@@ -56,6 +57,7 @@ module.exports = class Cart {
     }
     
     createList(name, url = null, owner = null) {
+        this.hasChange = true;
         const id = url ?? uuidv4();
         const own = owner ?? this.owner;
         let list = new AWORMap(own, name, id);
@@ -64,6 +66,7 @@ module.exports = class Cart {
     }
 
     deleteList(url) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) { 
 
@@ -91,6 +94,7 @@ module.exports = class Cart {
     }
 
     createItem(url, itemName) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
             return list.createItem(itemName);
@@ -99,6 +103,7 @@ module.exports = class Cart {
     }
 
     deleteItem(url, itemName) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
             return list.deleteItem(itemName);
@@ -107,6 +112,7 @@ module.exports = class Cart {
     }
 
     updateQuantities(url, itemName, current, total) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
             if (current > total) {
@@ -151,6 +157,7 @@ module.exports = class Cart {
     }
 
     merge(cartString, clientRequest = false) {
+        this.hasChange = true;
         const cart = JSON.parse(cartString);
 
         for (const receivedList of cart) {
@@ -179,5 +186,11 @@ module.exports = class Cart {
         } else {
             return 'ACK';
         }
+    }
+
+    changed() {
+        const state = this.hasChange;
+        this.hasChange = false;
+        return state;
     }
 }

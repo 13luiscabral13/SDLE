@@ -411,6 +411,27 @@ function test10() {
     console.log(cart1.toString());
 }
 
+function test11() {
+    const cart = new Cart('5001');
+
+    const url = cart.createList('List 1');
+    cart.createItem(url, 'Leite');
+    cart.updateQuantities(url, 'Leite', 2, 10);
+
+    if (cart.changed()) {
+        console.log("Initial changes")
+    }
+
+    if (cart.changed()) {
+        console.log("This never will be printed")
+    }
+
+    cart.deleteList(url);
+    if (cart.changed()) {
+        console.log("Another change");
+    }
+}
+
 function test() {
     // test0();  // load da base de dados local
     // test1();  // merge de duas listas diferentes, ambas não-deleted
@@ -423,6 +444,7 @@ function test() {
     // test8();  // o cart1 acaba de ter o url da Lista 1 que está só em modo remoto no cart 2, quer puxar o seu conteúdo
     // test9();  // merge na ring: server para server, expecta receber um "ACK"
     // test10(); // merge após proxy: client para server, expecta receber as suas listas conhecidas atualizadas
+    test11();    // testa se o cart é changed. se sim, acaba por permitir um store, senão não faz nada
 }
 
 test()
