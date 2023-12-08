@@ -5,6 +5,8 @@ const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
 const Cart = require('./crdt/Cart.js');
 
+
+const cart = new Cart();
 const app = express();
 app.use(express.json());
 
@@ -124,37 +126,37 @@ app.get('/lists/:url', (req, res) => {
 // POST Requests
 app.post('/createList', (req, res) => { // create a new shopping list
   const name = req.body.name;
-  const url = generateHash(name);
-
-  // insert a new list in local db
-  db.run('INSERT INTO list (name, url) VALUES (?, ?)', [name, url], function (err) {
-    if (err) {
-      console.error(err.message);
-      res.status(500).json({ message: 'Error Creating a List!'});
-    } else {
-      res.status(200).json({ message: 'List created!'});
-    }
-  });
+  cart.createList(name);
 });
 
 app.post('/deleteList', (req, res) => { // delete the list with that url
   const url = req.body.url;
-  
-  db.run('DELETE FROM list WHERE url = ?', [url], function (err) {
-    if (err) {
-      console.error(err.message);
-      res.status(500).json({ message: 'Error Deleting the List!'});
-    } else {
-      res.status(200).json({ message: `List with URL ${url} has been deleted!`});
-    }
-  });
+  cart.deleteList(url);
 });
 
 app.post('/changeItems', (req, res) => {
+  
   const items = req.body.changes;
-  console.log("Received: ", items);
-  console.log("Items: ", items);
-  res.status(200).json({message: `Items Received`});
+  const listUrl = req.body.listUrl;
+  let addedChanges = items[0];
+  let removedChanges = items[1];
+  let updatedChanges = items[2];
+  for (var key in addedChanges) {
+    let itemToAdd = addedChanges[key];
+    let debug = cart.createItem(listUrl, itemToAdd['name']);
+    console.log(debug)
+  }
+  for (var key in removedChanges) {
+    let itemToRemove = removedChanges[key];
+    let debug = cart.deleteItem(listUrl, itemToRemove['name']);
+    console.log(debug)
+  }
+  for (var key in updatedChanges) {
+    let itemToUpdate = updatedChanges[key];
+    let debug = cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['quantity']);
+    console.log(debug)
+  }
+  res.status(200).json({message: `Correctly`});
 });
 
 app.listen(port, () => {

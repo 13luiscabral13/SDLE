@@ -146,7 +146,7 @@ function getOneList(listUrl) {
   })
     .then(response => response.json())
     .then(data => {
-      modalShoppingList(data)
+      modalShoppingList(data, listUrl)
     })
     .catch(error => {
       console.error(error);
@@ -554,10 +554,11 @@ function createThisItem(itemData, initialArray, updatedArray) {
   itemDiv.appendChild(itemButtons);
   return itemDiv;
 }
-function modalShoppingList(data) {
+function modalShoppingList(data, listUrl) {
   const { items: dataItems, listName: dataName } = data;
   const initialArray = JSON.parse(JSON.stringify(dataItems));
   const shopList = document.getElementById("thisShoppingList");
+  shopList.setAttribute("data-url", listUrl);
   const ul = document.getElementById("this-list-items");
   const name = document.getElementById("this-list-name");
   var updatedArray = JSON.parse(JSON.stringify(dataItems));
@@ -789,8 +790,10 @@ function modalShoppingList(data) {
   checkButton.addEventListener("click", function () {
     allchanges = compareArrays(initialArray, updatedArray);
     console.log(allchanges);
+    const urlShop = shopList.getAttribute("data-url");
     const jsonToSend = {
-      addedChanges: changes    
+      changes: allchanges,
+      listUrl: urlShop
     }
     console.log(jsonToSend);
     fetch(url + '/changeItems', {
@@ -805,7 +808,7 @@ function modalShoppingList(data) {
         if ('error' in json) {
           console.log('Error adding the table', error);
         } else {
-          console.log('Successfully Received the Changes');
+          console.log(json);
         }
       })
       .catch(error => console.log(error));
