@@ -6,6 +6,7 @@ module.exports = class Cart {
     constructor(owner) {
         this.owner = owner;
         this.lists = new Map();
+        this.hasChange = true;
     }
 
     // Load old data from local database
@@ -29,7 +30,7 @@ module.exports = class Cart {
                 }
                 
                 for (let row of rows) {
-                    this.createList(row.name, row.url);
+                    this.createList(row.name, row.url, row.owner);
                     if (row.deleted) this.deleteList(row.url);
                 }
     
@@ -55,7 +56,8 @@ module.exports = class Cart {
         });
     }
     
-    createList(name, url, owner) {
+    createList(name, url = null, owner = null) {
+        this.hasChange = true;
         const id = url ?? uuidv4();
         const own = owner ?? this.owner;
         let list = new AWORMap(own, name, id);
@@ -64,6 +66,7 @@ module.exports = class Cart {
     }
 
     deleteList(url) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) { 
 
@@ -84,12 +87,14 @@ module.exports = class Cart {
         return list ? list.info() : {
             url: url,
             name: null,
+            owner: null,
             deleted: true,
             items: [],
         }
     }
 
     createItem(url, itemName) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
             return list.createItem(itemName);
@@ -98,6 +103,7 @@ module.exports = class Cart {
     }
 
     deleteItem(url, itemName) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
             return list.deleteItem(itemName);
@@ -106,6 +112,7 @@ module.exports = class Cart {
     }
 
     updateQuantities(url, itemName, current, total) {
+        this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
             if (current > total) {
@@ -134,15 +141,23 @@ module.exports = class Cart {
         }
     }
 
-    toString() {
+    toString(knownLists = null) {
+
+        let listsToInclude;
+
+        if (knownLists === null) {
+            listsToInclude = Array.from(this.lists.keys());
+        } else if (Array.isArray(knownLists)) {
+            listsToInclude = knownLists.filter(url => this.lists.has(url));
+        }
+
         return JSON.stringify(
-            Array.from(
-                this.lists.keys()).map((url) => this.getListToString(url)
-            )
+            listsToInclude.map(url => this.getListToString(url))
         );
     }
 
-    merge(cartString) {
+    merge(cartString, clientRequest = false) {
+        this.hasChange = true;
         const cart = JSON.parse(cartString);
 
         for (const receivedList of cart) {
@@ -161,8 +176,21 @@ module.exports = class Cart {
 
             // Se não foi eliminada, dar merge aos conteúdos do meu lado
             else {
-                list.merge(receivedList.items);
+                list.merge(receivedList);
             }
         }
+
+        if (clientRequest) {
+            const knownLists = Array.from(cart.map((entry) => entry.url));
+            return this.toString(knownLists);
+        } else {
+            return 'ACK';
+        }
+    }
+
+    changed() {
+        const state = this.hasChange;
+        this.hasChange = false;
+        return state;
     }
 }
