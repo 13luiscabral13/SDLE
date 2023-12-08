@@ -13,33 +13,6 @@ const canceljoinBtn = document.getElementById('cancel-join-btn');
 const port = parseInt(document.getElementById('port').textContent);
 const url = `http://localhost:${port}`;
 
-// -------------------------------------------------
-// Must be a seperate thread doing a polling loop from the server
-let ws;
-
-function init() {
-  if (ws) {
-    ws.onerror = ws.onopen = ws.onclose = null
-    ws.close()
-  }
-
-  ws = new WebSocket('ws://localhost:5000');
-  ws.onopen = () => {
-    console.log('Connection opened!');
-  }
-
-  ws.onmessage = function () {
-    console.log(data)
-  };
-
-  ws.onclose = function () {
-    ws = null
-  }
-}
-
-init()
-// -------------------------------------------------
-
 createShoppingListBtn.addEventListener('click', () => {
   modal.hidden = false
 })
