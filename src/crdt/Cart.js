@@ -68,17 +68,7 @@ module.exports = class Cart {
     deleteList(url) {
         this.hasChange = true;
         let list = this.lists.get(url);
-        if (list) { 
-
-            // List is deleted only by its owner
-            if (list.owner === this.owner) {
-                list.delete();
-                return "List deleted";
-            } else {
-                return "Error: You don't have permissions to delete this list"
-            }
-        }
-        return "Error: This list doesn't exist in your system";
+        if (list) list.delete();
     }
 
     // Get list info in JSON format
