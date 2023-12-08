@@ -6,16 +6,21 @@ const crypto = require('crypto');
 const Cart = require('./crdt/Cart.js');
 
 
-const cart = new Cart();
 const app = express();
 app.use(express.json());
 
 // Check if a port is provided as a command-line argument
 const port = process.argv[2];
+const cart = new Cart(port);
 
 if (!port) {
   console.log('Please provide a <PORT> on the command \x1b[3mnode client.js <PORT>\x1b[0m. (Example: node client.js 5500)');
   process.exit(1); // Exit the script
+}
+
+async function loadCart() {
+  const db = new sqlite3.Database('../database/local/'+port+".db");
+  await cart.load(db);
 }
 
 // Creates the 'Live Server' where User is running
@@ -31,6 +36,7 @@ app.get('/', (req, res) => { // Gets the index.html content and gives the port o
       res.end(htmlContent);
     }
   });
+  loadCart();
 });
 
 // Gets the rest of the files of "src" folder
@@ -74,15 +80,9 @@ if (!fs.existsSync(dbFile)) { // create local database if there isnt one
 
 // GET requests
 app.get('/lists', (req, res) => { // reads all the Users shopping lists
-  db.all('SELECT * FROM list', (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return;
-    }
-  
-    console.log(rows);
-    res.status(200).json(rows);
-  });
+  let info = cart.info();
+  console.log("Info: ", info);
+  res.status(200).send(info);
 });
 
 // get a list
@@ -90,43 +90,18 @@ app.get('/lists/:url', (req, res) => {
   const fullUrl = req.params.url;
   const url = fullUrl.replace(/^\/lists\//, '');
   // Fetch list name based on the provided URL
-  db.get('SELECT name FROM list WHERE url = ?', [url], (err, list) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'An error occurred while fetching data.' });
-    }
-
-    if (!list) {
-      return res.status(404).json({ error: 'List not found.' });
-    }
-
-    // Fetch rows based on the list URL
-    db.all('SELECT * FROM item WHERE list_url = ?', [url], (err, rows) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: 'An error occurred while fetching data.' });
-      }
-
-      console.log("Fetched url: ", url);
-      console.log(rows);
-
-      // Create a response object with list name and rows
-      const response = {
-        listName: list.name,
-        items: rows
-      };
-
-      res.status(200).json(response);
-    });
-  });
-
+  let list = cart.getList(url);
+  console.log("List: ", list);
+  res.status(200).send(list);
 });
 
 
 // POST Requests
 app.post('/createList', (req, res) => { // create a new shopping list
   const name = req.body.name;
-  cart.createList(name);
+  let list =  cart.createList(name);
+  console.log(list);
+  res.status(200).json({message: `Created the List`, url: list})
 });
 
 app.post('/deleteList', (req, res) => { // delete the list with that url
@@ -143,33 +118,20 @@ app.post('/changeItems', (req, res) => {
   let updatedChanges = items[2];
   for (var key in addedChanges) {
     let itemToAdd = addedChanges[key];
-    let debug = cart.createItem(listUrl, itemToAdd['name']);
-    console.log(debug)
+    cart.createItem(listUrl, itemToAdd['name']);
   }
   for (var key in removedChanges) {
     let itemToRemove = removedChanges[key];
-    let debug = cart.deleteItem(listUrl, itemToRemove['name']);
-    console.log(debug)
+    cart.deleteItem(listUrl, itemToRemove['name']);
   }
   for (var key in updatedChanges) {
     let itemToUpdate = updatedChanges[key];
-    let debug = cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['quantity']);
-    console.log(debug)
+    cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['total']);
   }
-  res.status(200).json({message: `Correctly`});
+  console.log(cart.getList(listUrl));
+  res.status(200).json({message: `Correctly changed items`});
 });
 
 app.listen(port, () => {
   console.log(`Web interface is running on http://localhost:${port}`);
 });
-
-
-// Auxiliar Functions
-function generateHash(title) {
-  const randomNum = Math.floor(Math.random() * 100000); // Generate a random number
-  const combinedInput = title + randomNum.toString();
-  
-  const hash = crypto.createHash('md5');
-  hash.update(combinedInput);
-  return hash.digest('hex');
-}

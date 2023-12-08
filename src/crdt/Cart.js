@@ -112,6 +112,7 @@ module.exports = class Cart {
     }
 
     updateQuantities(url, itemName, current, total) {
+        console.log("Updating: ", itemName, " with current: ", current, " and total: ", total);
         this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {

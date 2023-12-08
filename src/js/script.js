@@ -91,6 +91,9 @@ function createList() {
         console.log('Error adding the table', error);
       } else {
         console.log('Successfully added Shopping List!');
+        console.log(json);
+        let myElm = {name: titleText, url: json.url};
+        shoppingLists.append(createShoppingList(myElm));
       }
     })
     .catch(error => console.log(error));
@@ -153,15 +156,8 @@ function getOneList(listUrl) {
     });
 }
 
-function display_shopping_lists(data) {
-  let lastChild = shoppingLists.lastElementChild;
-  while (lastChild) {
-    lastChild.remove()
-    lastChild = shoppingLists.lastElementChild;
-  }
-
-  data.forEach(element => {
-    const shoppingList = document.createElement('div')
+function createShoppingList(element) {
+  const shoppingList = document.createElement('div')
     shoppingList.classList.add('shopping-list-item')
     shoppingList.id = "shopping-list-name-" + element.name;
     const title = document.createElement('h1')
@@ -172,8 +168,6 @@ function display_shopping_lists(data) {
 
     const divinfo = document.createElement('div')
     divinfo.id = "div-info"
-    // Create a Date object by parsing the original timestamp
-    let date = new Date(element.timestamp);
 
     const deleteBtn = document.createElement('button')
     // Set the button's ID
@@ -280,6 +274,19 @@ function display_shopping_lists(data) {
 
     shoppingList.appendChild(divtitle)
     shoppingList.appendChild(divinfo)
+    return shoppingList;
+}
+
+function display_shopping_lists(data) {
+
+  let lastChild = shoppingLists.lastElementChild;
+  while (lastChild) {
+    lastChild.remove()
+    lastChild = shoppingLists.lastElementChild;
+  }
+
+  data.forEach(element => {
+    let shoppingList = createShoppingList(element);
     shoppingLists.appendChild(shoppingList)
   });
 }
@@ -373,7 +380,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
   itemQuantity.appendChild(itemSla);
 
   const itemQua = document.createElement("p");
-  itemQua.textContent = itemData.quantity;
+  itemQua.textContent = itemData.total;
   itemQuantity.appendChild(itemQua);
   itemDiv.appendChild(itemQuantity);
 
@@ -398,7 +405,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
   if (currentValue == null) {
     currentValue = 0;
   }
-  if (currentValue != itemData.quantity) {
+  if (currentValue != itemData.total) {
     addButton.addEventListener("click", function () {
       intCur = parseInt(itemCur.textContent);
       intQua = parseInt(itemQua.textContent);
@@ -515,7 +522,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
   function changeArray(text) {
     for (var key in updatedArray) {
       if (updatedArray[key]['name'] == itemData.name) {
-        updatedArray[key]['quantity'] = parseInt(text);
+        updatedArray[key]['total'] = parseInt(text);
       }
     }
   }
@@ -526,12 +533,12 @@ function createThisItem(itemData, initialArray, updatedArray) {
       // Check if the Enter key was pressed
       let text = convert(itemQua.innerText);
       if (checkInteger(text)) {
-        itemQua.innerText = itemData.quantity;
+        itemQua.innerText = itemData.total;
         itemQua.contentEditable = false; // Disable contentEditable
         alert("Please input only integers")
       }
-      else if (checkSmaller(parseInt(text), itemData.quantity)) {
-        itemQua.innerText = itemData.quantity;
+      else if (checkSmaller(parseInt(text), itemData.total)) {
+        itemQua.innerText = itemData.total;
         itemQua.contentEditable = false; // Disable contentEditable
         alert("The new value must be bigger than the previous")
       }
@@ -556,7 +563,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
 }
 function modalShoppingList(data, listUrl) {
   const { items: dataItems, listName: dataName } = data;
-  const initialArray = JSON.parse(JSON.stringify(dataItems));
+  let initialArray = JSON.parse(JSON.stringify(dataItems));
   const shopList = document.getElementById("thisShoppingList");
   shopList.setAttribute("data-url", listUrl);
   const ul = document.getElementById("this-list-items");
@@ -671,7 +678,7 @@ function modalShoppingList(data, listUrl) {
           }
           else {
             console.log("Name: ", itemNameInput.value, " Quantity: ", itemQuantityGoalInput.value);
-            let newItem = { "name": itemNameInput.value, "deleted": false, "current": 0, "quantity": parseInt(itemQuantityGoalInput.value) }
+            let newItem = { "name": itemNameInput.value, "deleted": false, "current": 0, "total": parseInt(itemQuantityGoalInput.value) }
             modalAddItem.remove();
             addToArray(newItem, updatedArray, initialArray);
             const newitemdiv = createThisItem(newItem, initialArray, updatedArray);
@@ -776,12 +783,8 @@ function modalShoppingList(data, listUrl) {
     checkButton.hidden = true;
   });
 
-
-
-
   // Access the form inside the element
   var formInsideShoppingList = shopList.querySelector("form");
-
 
   // Append the close button to the modal
   formInsideShoppingList.appendChild(closeButton);
@@ -795,7 +798,6 @@ function modalShoppingList(data, listUrl) {
       changes: allchanges,
       listUrl: urlShop
     }
-    console.log(jsonToSend);
     fetch(url + '/changeItems', {
       method: 'POST',
       headers: {
@@ -806,8 +808,9 @@ function modalShoppingList(data, listUrl) {
       .then(response => response.json())
       .then(json => {
         if ('error' in json) {
-          console.log('Error adding the table', error);
+          console.log('Error adding the items', error);
         } else {
+          initialArray = updatedArray;
           console.log(json);
         }
       })
@@ -878,7 +881,7 @@ function compareArrays(initialArray, updatedArray) {
     var keyUp = checkIfInArray(initialArray[key]['name'], updatedArray); // Key in updatedArray
     if (keyUp != -1) { // if in updated Array
       if (JSON.stringify(initialArray[key]) != JSON.stringify(updatedArray[keyUp])) { /* if different in both arrays */
-        updatedElements.push(initialArray[key])
+        updatedElements.push(updatedArray[key])
       }
       passedUpdatedElements.add(updatedArray[keyUp]);
     }
