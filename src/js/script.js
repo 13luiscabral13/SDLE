@@ -166,8 +166,24 @@ function getOneList(listUrl) {
     });
 }
 
-function createShoppingList(element) {
+function createNotLoadedShoppingList(element) {
   const shoppingList = document.createElement('div')
+  shoppingList.classList.add('shopping-list-item')
+  shoppingList.id = "shopping-list-name-" + element.name;
+  const title = document.createElement('h1')
+  title.textContent = element.name
+  const divtitle = document.createElement('div')
+  divtitle.id = "div-title"
+  divtitle.append(title)
+  const divinfo = document.createElement('div')
+  divinfo.id = "div-info"
+  shoppingList.appendChild(divtitle)
+  shoppingList.appendChild(divinfo)
+  return shoppingList;
+}
+
+function createShoppingList(element) {
+    const shoppingList = document.createElement('div')
     shoppingList.classList.add('shopping-list-item')
     shoppingList.id = "shopping-list-name-" + element.name;
     const title = document.createElement('h1')
@@ -297,8 +313,14 @@ function display_shopping_lists(data) {
 
   data.forEach(element => {
     if (!element.deleted) {
-      let shoppingList = createShoppingList(element);
-      shoppingLists.appendChild(shoppingList)
+      if (element.loaded) {
+        let shoppingList = createShoppingList(element);
+        shoppingLists.appendChild(shoppingList)
+      }
+      else {
+        let shoppingList = createNotLoadedShoppingList(element);
+        shoppingLists.appendChild(shoppingList)
+      }
     }
   });
 }

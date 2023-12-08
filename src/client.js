@@ -56,18 +56,6 @@ if (isMainThread) {
       }
     });
     
-    // Initial populate of the schema
-    const dataPath = '../database/data.sql';
-    const data = fs.readFileSync(dataPath, 'utf8');
-    
-    // Execute the data.sql SQL statements
-    db.exec(data, (err) => {
-      if (err) {
-        console.error(err.message);
-      } else {
-        console.log('Data has been inserted successfully');
-      }
-    });
   } else { // If db already exists
     var db = new sqlite3.Database(dbFile);
   }
