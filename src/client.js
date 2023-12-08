@@ -124,20 +124,15 @@ if (isMainThread) {
     console.log(`Web interface is running on http://localhost:${port}`);
   });
 
-  /*const dbUpdateThread = new Worker('./workers/db_thread.js');
+  const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: {port: port}});
 
-  // Handle messages from the database update thread
-  dbUpdateThread.on('message', (message) => {
-    if (message.type === 'dbUpdateComplete') {
-      // Database update is complete, handle accordingly
-      console.log('Database update complete');
-    } else {
-      // Handle other types of messages from the database update thread
-      console.log('Message from db update thread:', message);
+  setInterval(check_cart_isChanged, 5000)
+
+  function check_cart_isChanged() {
+    if(cart.changed()) {
+      dbUpdateThread.postMessage({ type: 'updateDB', cart: cart.info() });
     }
-  });
-
-  setInterval(check_cart_isDirty, 5000)*/
+  }
 
   const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart } });
 
@@ -153,9 +148,4 @@ if (isMainThread) {
     }
   });
 
-  /*function check_cart_isDirty() {
-    if(cart.isDirty()) {
-      dbUpdateThread.postMessage({ type: 'updateDB', cart: cart });
-    }
-  }*/
 }

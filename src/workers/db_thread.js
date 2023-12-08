@@ -3,11 +3,10 @@ const sqlite3 = require('sqlite3').verbose();
 
 if (!isMainThread) {
   const { port } = workerData;
-  let db = new sqlite3.Database(`${port}.db`);
+  const dbFile = `../database/local/${port}.db`;
+  let db = new sqlite3.Database(dbFile);
 
-  function updateDB(cart) {
-    const cartLists = cart.info();
-
+  function updateDB(cartLists) {
     cartLists.forEach((list) => {
       const listExistsQuery = 'SELECT 1 FROM list WHERE url = ?';
       const listExistsParams = [list.url];
@@ -26,8 +25,8 @@ if (!isMainThread) {
 
         // List exists or is not marked as deleted, proceed with the update/insert
         db.run(
-          'INSERT OR REPLACE INTO list (name, url, changed, deleted) VALUES (?, ?, ?, ?)',
-          [list.name, list.url, true, list.deleted],
+          'INSERT OR REPLACE INTO list (name, owner, url, deleted) VALUES (?, ?, ?, ?)',
+          [list.name, list.owner, list.url, list.deleted],
           (err) => {
             if (err) {
               console.error('Error updating shopping list:', err);
@@ -38,8 +37,8 @@ if (!isMainThread) {
         // Update or insert items for the current list
         list.items.forEach((item) => {
           db.run(
-            'INSERT OR REPLACE INTO item (name, list_url, current, quantity, deleted, changed) VALUES (?, ?, ?, ?, ?, ?)',
-            [item.name, list.url, 0, item.quantity, item.deleted, true],
+            'INSERT OR REPLACE INTO item (name, list_url, current, quantity, deleted) VALUES (?, ?, ?, ?, ?)',
+            [item.name, list.url, item.current, item.total, item.deleted],
             (err) => {
               if (err) {
                 console.error('Error updating item:', err);
@@ -49,10 +48,6 @@ if (!isMainThread) {
         });
       });
     });
-
-    db.close();
-
-    parentPort.postMessage({ type: 'dbUpdateComplete' });
   }
 
   parentPort.on('message', (message) => {
