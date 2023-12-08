@@ -3,6 +3,7 @@ const GCounter = require('./GCounter.js');
 module.exports = class AWORMap {
 
     constructor(owner, name, url, loaded = true) {
+        this.deleted = false;
         this.loaded = loaded;
         this.owner = owner;
         this.name = name;
@@ -52,7 +53,7 @@ module.exports = class AWORMap {
         return {
             name: this.name,
             url: this.url, 
-            deleted: false,
+            deleted: this.deleted,
             owner: this.owner,
             loaded: this.loaded,
             items: items,
@@ -75,7 +76,7 @@ module.exports = class AWORMap {
         return {
             name: this.name,
             url: this.url, 
-            deleted: false,
+            deleted: this.deleted,
             owner: this.owner,
             items: items,
         }; 
@@ -115,5 +116,12 @@ module.exports = class AWORMap {
             }
         }
 
+    }
+
+    delete() {
+        this.deleted = true;
+        this.owner = null;
+        this.name = null;
+        this.items = [];
     }
 }

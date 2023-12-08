@@ -72,7 +72,7 @@ module.exports = class Cart {
 
             // List is deleted only by its owner
             if (list.owner === this.owner) {
-                this.lists.set(url, null);
+                list.delete();
                 return "List deleted";
             } else {
                 return "Error: You don't have permissions to delete this list"
@@ -171,7 +171,8 @@ module.exports = class Cart {
             }
 
             // Se a lista recebida foi eliminada, eliminar a minha também
-            if (receivedList.deleted && !list.deleted) {
+            // Se a lista recebida não foi eliminada mas eu tenho elimiminada, deixar como está
+            if ((receivedList.deleted && !list.deleted) || (!receivedList.deleted && list.deleted)) {
                 this.deleteList(receivedList.url);
             }
 
