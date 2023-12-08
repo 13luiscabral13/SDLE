@@ -1,6 +1,7 @@
 const shoppingLists = document.querySelector('.shopping-lists')
 const createShoppingListBtn = document.getElementById('add-list')
 const joinShoppingListBtn = document.getElementById('join-list')
+const joinForm = document.getElementById('join-list-form')
 
 const modal = document.getElementById('modal');
 const modal_join = document.getElementById('modal_join');
@@ -52,26 +53,62 @@ cancelBtn.addEventListener('click', () => {
   modal.hidden = true
 });
 
+function joinList() {
+  console.log("Entered join list");
+  const listUrl = document.getElementById('join-list-name').value;
+  const jsonToSend = {
+    listUrl: listUrl
+  }
+  fetch(url + '/joinList', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(jsonToSend)
+  })
+    .then(response => response.json())
+    .then(json => {
+      if ('error' in json) {
+        console.log('Error adding the table', error);
+      } else {
+        console.log('Successfully joined Shopping List!');
+        console.log(json);
+      }
+    })
+    .catch(error => console.log(error));
+    modal_join.hidden = true;
+  }
+
+
 // ------------------- Adding a Shopping List -------------------
 form.addEventListener("submit", function (event) {
   event.preventDefault();
   createList()
 });
 
+// ------------------- Joining a Shopping List -------------------
+
+joinForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  joinList()
+});
+
+
 // ------------------- Updates the Content Every second -------------------
 function updateTime() {
+  console.log("Refreshed!");
   getShoppingLists();
 }
 
 updateTime(); // update immediately
-//setInterval(updateTime, 5000); // update every second
+setInterval(updateTime, 5000); // update every second
 
 // ------------------- Server Part -------------------
 // POST - create a new shoppingList
 function createList() {
   modal.hidden = true
 
-  const title = document.querySelector(".list-name");
+  const title = document.getElementById("create-list-name");
   const titleText = title.value
 
   const jsonToSend = {
@@ -286,8 +323,10 @@ function display_shopping_lists(data) {
   }
 
   data.forEach(element => {
-    let shoppingList = createShoppingList(element);
-    shoppingLists.appendChild(shoppingList)
+    if (!element.deleted) {
+      let shoppingList = createShoppingList(element);
+      shoppingLists.appendChild(shoppingList)
+    }
   });
 }
 

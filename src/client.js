@@ -11,16 +11,12 @@ app.use(express.json());
 
 // Check if a port is provided as a command-line argument
 const port = process.argv[2];
-const cart = new Cart(port);
+
+
 
 if (!port) {
   console.log('Please provide a <PORT> on the command \x1b[3mnode client.js <PORT>\x1b[0m. (Example: node client.js 5500)');
   process.exit(1); // Exit the script
-}
-
-async function loadCart() {
-  const db = new sqlite3.Database('../database/local/'+port+".db");
-  await cart.load(db);
 }
 
 // Creates the 'Live Server' where User is running
@@ -36,7 +32,6 @@ app.get('/', (req, res) => { // Gets the index.html content and gives the port o
       res.end(htmlContent);
     }
   });
-  loadCart();
 });
 
 // Gets the rest of the files of "src" folder
@@ -77,6 +72,9 @@ if (!fs.existsSync(dbFile)) { // create local database if there isnt one
   var db = new sqlite3.Database(dbFile);
 }
 
+let cart = new Cart(port);
+cart.load(db);
+
 
 // GET requests
 app.get('/lists', (req, res) => { // reads all the Users shopping lists
@@ -109,6 +107,16 @@ app.post('/deleteList', (req, res) => { // delete the list with that url
   cart.deleteList(url);
 });
 
+
+app.post('/joinList', (req, res) => { // join a list with that url
+  let listaUrl = req.body.listUrl;
+  cart.createList("Waiting for load...", listaUrl, 'unknown', false);
+  let createdList = cart.getList(listaUrl);
+  console.log("Cart Info ", cart.info());
+  res.status(200).send(json = {message: `Created the List`, url: listaUrl, list: createdList});
+});
+
+
 app.post('/changeItems', (req, res) => {
   
   const items = req.body.changes;
@@ -119,6 +127,7 @@ app.post('/changeItems', (req, res) => {
   for (var key in addedChanges) {
     let itemToAdd = addedChanges[key];
     cart.createItem(listUrl, itemToAdd['name']);
+    cart.updateQuantities(listUrl, itemToAdd['name'], 0, itemToAdd['total'])
   }
   for (var key in removedChanges) {
     let itemToRemove = removedChanges[key];

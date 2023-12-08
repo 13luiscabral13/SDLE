@@ -56,11 +56,11 @@ module.exports = class Cart {
         });
     }
     
-    createList(name, url = null, owner = null) {
+    createList(name, url = null, owner = null, loaded = true) {
         this.hasChange = true;
         const id = url ?? uuidv4();
         const own = owner ?? this.owner;
-        let list = new AWORMap(own, name, id);
+        let list = new AWORMap(own, name, id, loaded);
         this.lists.set(id, list);
         return id;
     }
