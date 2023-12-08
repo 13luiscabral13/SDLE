@@ -5,6 +5,7 @@ const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 
 let skip = 0;
 let updated = 0;
+let timedOut = false;
 
 //Enviar cart para um vizinho
 async function updateNeighboor(neighborPort, cart) {
@@ -16,20 +17,25 @@ async function updateNeighboor(neighborPort, cart) {
     // Servidor atual envia cart ao vizinho
     requester.send(cart);
 
-    // Define um timeout para esperar pela resposta do servidor vizinho
-    const timeoutId = setTimeout(() => {
-      skip++;  
-      console.error(`Timeout waiting for ACK from server ${neighborPort}`);
-    }, 3000);
-    
-    // Espera pela resposta do servidor vizinho
-    while (true) {
-      const [response] = await requester.receive();
-      clearTimeout(timeoutId);
-      console.log(`Received ACK from server ${neighborPort}`);
-      updated++;
-      requester.close();
-      break;
+    // Promessa para o timeout
+    const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            reject(new Error('Task timeout error happened'));
+        }, 2000);
+    });
+
+    try {
+        // Espera pela resposta do servidor vizinho ou timeout
+        const [response] = await Promise.race([requester.receive(), timeoutPromise]);
+
+        console.log(`Received ACK from server ${neighborPort}`);
+        updated++;
+    } catch (error) {
+        console.error(error.message);
+        skip++;
+    } finally {
+        // Certifique-se de fechar o socket após o uso
+        requester.close();
     }
 }
 
@@ -41,7 +47,11 @@ async function updateAllNeighboors(httpPort, cart) {
         let pos = config.servers.indexOf(parseInt(httpPort));
         let neighbor = config.servers[(pos + updated + skip + 1) % config.servers.length];
 
-        const success = await updateNeighboor(neighbor, cart);
+        if(neighbor === parseInt(httpPort)) {
+            skip++;
+        }
+
+        await updateNeighboor(neighbor, cart);
     }
 }
 
@@ -74,9 +84,7 @@ if (!isMainThread) {
 
     parentPort.on('message', async (message) => {
         if(message.type === "updateNeighbors") {
-            console.log("------- INIT UPDATE NEIGHBORS ------");
             await updateAllNeighboors(httpPort, message.cart);
-            console.log("------ FINISH UPDATE NEIGHBORS -----");
         }
     })
 }
