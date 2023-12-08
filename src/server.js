@@ -3,6 +3,7 @@ const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const zmq = require("zeromq")
 const Cart = require('./crdt/Cart.js');
+const { Worker } = require('worker_threads');
 
 const port = process.argv[2];
   
@@ -56,3 +57,19 @@ async function client_requests() {
 }
 
 client_requests()
+
+// Worker thread responsável por enviar updates aos vizinhos e receber updates vindos dos outros servers
+const updateWorker = new Worker('./workers/servers_thread.js', { workerData: { port } });
+
+updateWorker.on('message', (message) => {
+  if(message.type === 'updateCart') {
+    cart.merge(message.cart);
+  }
+})
+
+//De 5 em 5 segundos, server manda updates para os seus vizinhos
+async function sendingUpdates() {
+  updateWorker.postMessage({ type: 'updateNeighbors', cart: cart});
+}
+
+setInterval(sendingUpdates, 7000);
