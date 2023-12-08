@@ -8,33 +8,6 @@ const cancelBtn = document.getElementById('cancel-btn');
 const port = parseInt(document.getElementById('port').textContent);
 const url = `http://localhost:${port}`;
 
-// -------------------------------------------------
-// Must be a seperate thread doing a polling loop from the server
-let ws;
-
-function init() {
-  if(ws) {
-    ws.onerror = ws.onopen = ws.onclose = null
-    ws.close()
-  }
-  
-  ws = new WebSocket('ws://localhost:5000');
-  ws.onopen = () => {
-    console.log('Connection opened!');
-  }
-
-  ws.onmessage = function() {
-    console.log(data)
-  };
-
-  ws.onclose = function() {
-    ws = null
-  }
-}
-
-init()
-// -------------------------------------------------
-
 createShoppingListBtn.addEventListener('click', () => {
   modal.hidden = false
 })
@@ -148,21 +121,6 @@ function display_shopping_lists(data) {
 
     const divinfo = document.createElement('div')
     divinfo.id = "div-info"
-    // Create a Date object by parsing the original timestamp
-    let date = new Date(element.timestamp);
-
-    // Use Intl.DateTimeFormat to format the date as "20/10/23"
-    const formattedDate = new Intl.DateTimeFormat("en-GB", { year: "2-digit", month: "2-digit", day: "2-digit" }).format(date);
-
-    // Format the time as "09:05"
-    const formattedTime = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-
-    // Combine the date and time
-    const formattedTimestamp = `${formattedDate}  ${formattedTime}`;
-
-    const timestamp = document.createElement('h4')
-    timestamp.textContent = formattedTimestamp
-    timestamp.id = "timestamp"
 
     const deleteBtn = document.createElement('button')
     // Set the button's ID
@@ -196,7 +154,6 @@ function display_shopping_lists(data) {
     divbtns.append(deleteBtn)
     divbtns.append(shareBtn)
     divinfo.appendChild(divbtns)  
-    divinfo.appendChild(timestamp)
 
     shoppingList.appendChild(divtitle)
     shoppingList.appendChild(divinfo)
