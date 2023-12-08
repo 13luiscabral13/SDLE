@@ -146,14 +146,17 @@ setInterval(check_cart_isChanged, 5000)
       dbUpdateThread.postMessage({ type: 'updateDB', cart: cart.info() });
     }
   }
-  const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart } });
+
+  const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart.toString() } });
 
   // Handle messages from the database update thread
   cloudThread.on('message', (message) => {
     if(message.type === 'loadCart'){
-      cloudThread.postMessage({ type: 'updateCart', cart: cart });
+      cloudThread.postMessage({ type: 'updateCart', cart: cart.toString() });
     } else if(message.type === 'responseFromServer') {
-      //cart.merge(message.cart.toString())
+      //lock
+      cart.merge(message.cart, false)
+      //unlock
     } else {
       // Handle other types of messages from the database update thread
       console.log('Message from cloud thread:', message);
