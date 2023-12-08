@@ -1,56 +1,58 @@
 const express = require('express');
 const fs = require('fs');
-const http = require('http');
-const WebSocket = require('ws');
+const sqlite3 = require('sqlite3').verbose();
+const zmq = require("zeromq")
+const Cart = require('./crdt/Cart.js');
 
-const httpPort = 5000;
-const app = express(); // Create an Express application instance.
-app.use(express.json()); // to remove when json file is removed
+const port = process.argv[2];
+  
+if (!port) {
+  console.log('Please provide a <PORT> on the command \x1b[3mnode client.js <PORT>\x1b[0m. (Example: node client.js 5500)');
+  process.exit(1); // Exit the script
+}
 
-const allowedOrigins = []
+// Creation and loading of the database
+const dbFile = `../database/servers/${port}.db`;
+let db = null
+if (!fs.existsSync(dbFile)) { // create local database if there isnt one
+  db = new sqlite3.Database(dbFile);
 
-app.use(function(req, res, next) { // Launch the allowed Origins as an empty list (for now) with the correct accesses
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+  // Read the schema.sql file
+  const schemaPath = '../database/schema.sql';
+  const schema = fs.readFileSync(schemaPath, 'utf8');
 
-// deals with errors
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Internal Server Error');
-});
-
-const server = http.createServer(app); // Pass the app to create the HTTP server.
-
-/*
-- change websocket to proxy connection
-- crdt in server ?
-- server db ?
-*/
-
-const wss = new WebSocket.Server({ server }); 
-
-wss.on('connection', function connection(ws, req) { // Creates a WebSocket with a client so they can communicate
-  const origin = req.headers.origin;
-  if (!allowedOrigins.includes(origin)) {
-    allowedOrigins.push(origin);  // pushes a new allowed Origin - localhost:port (port of the client)
-    console.log(allowedOrigins)
-  }
-
-  ws.on('message', function incoming(data) { // to be changed, deals with messages of the client
-    wss.clients.forEach(function each(client) {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(data);
-      }
-    });
-    console.log(data)
+  // Execute the schema.sql SQL statements
+  db.exec(schema, (err) => {
+    if (err) {
+      console.error(err.message);
+    } else {
+      console.log('Schema has been executed successfully');
+    }
   });
-});
+} else { // If db already exists
+  db = new sqlite3.Database(dbFile);
+}
 
-server.listen(httpPort, function() {
-  console.log(`Server is listening on ${httpPort}!`);
-});
+let cart = new Cart(port);
+cart.load(db)
+
+const subscriber = new zmq.Subscriber
+subscriber.connect("tcp://localhost:9000")
+subscriber.subscribe("5500")
+subscriber.subscribe("5501")
+
+const publisher = new zmq.Publisher
+publisher.connect("tcp://localhost:9001")
+
+async function client_requests() {
+  for await (const [id, msg] of subscriber) {
+    console.log("received a message related to:", id.toString(), "containing message:", msg.toString())
+    
+    const response = cart.merge(msg, true)
+    console.log(cart.info())
+
+    await publisher.send([id, response])
+  }
+}
+
+client_requests()
