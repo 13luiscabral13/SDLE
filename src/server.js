@@ -4,7 +4,12 @@ const sqlite3 = require('sqlite3').verbose();
 const zmq = require("zeromq")
 const Cart = require('./crdt/Cart.js');
 
-const port = 5000
+const port = process.argv[2];
+  
+if (!port) {
+  console.log('Please provide a <PORT> on the command \x1b[3mnode client.js <PORT>\x1b[0m. (Example: node client.js 5500)');
+  process.exit(1); // Exit the script
+}
 
 // Creation and loading of the database
 const dbFile = `../database/servers/${port}.db`;
@@ -33,17 +38,19 @@ cart.load(db)
 
 const subscriber = new zmq.Subscriber
 subscriber.connect("tcp://localhost:9000")
+subscriber.subscribe("5500")
+subscriber.subscribe("6000")
 
 const publisher = new zmq.Publisher
 publisher.connect("tcp://localhost:9001")
 
 async function client_requests() {
   for await (const [id, msg] of subscriber) {
-    console.log("received a message related to:", id, "containing message:", msg)
+    console.log("received a message related to:", id.toString(), "containing message:", msg.toString())
 
-    cart.merge(msg)
+    const response = cart.merge(msg, true)
 
-    await publisher.send([id, cart])
+    await publisher.send([id, response])
   }
 }
 

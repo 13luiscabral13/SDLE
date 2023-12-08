@@ -7,6 +7,7 @@ if (!isMainThread) {
 
     const subscriber = new zmq.Subscriber
     subscriber.connect("tcp://localhost:8001")
+    subscriber.subscribe(port)
 
     const publisher = new zmq.Publisher
     publisher.connect("tcp://localhost:8000")
@@ -18,11 +19,10 @@ if (!isMainThread) {
         await new Promise(resolve => { setTimeout(resolve, 10) })
         
         await publisher.send([port, cart])
-        console.log("cart sent")
         for await (const [id, response] of subscriber) {
-            console.log("received a message related to:", id, "containing message:", cart)
-            if(id == port) {
-                cart = response
+            console.log("received a message related to:", id.toString(), "containing message:", response.toString())
+            if(id.toString() == port.toString()) {
+                cart = response.toString()
                 break;
             }
         }
@@ -32,11 +32,10 @@ if (!isMainThread) {
 
     parentPort.on('message', (message) => {
         if (message.type === 'updateCart') {
-            console.log("cart loaded")
             cart = message.cart;
         }
     });
     
-    //setInterval(subscribeProxy, 5000);
-    subscribeProxy()
+    setInterval(subscribeProxy, 5000);
+    //subscribeProxy()
 }
