@@ -2,7 +2,8 @@ const GCounter = require('./GCounter.js');
 
 module.exports = class AWORMap {
 
-    constructor(owner, name, url) {
+    constructor(owner, name, url, loaded = true) {
+        this.loaded = loaded;
         this.owner = owner;
         this.name = name;
         this.url = url;
@@ -53,6 +54,7 @@ module.exports = class AWORMap {
             url: this.url, 
             deleted: false,
             owner: this.owner,
+            loaded: this.loaded,
             items: items,
         };  
     }
@@ -81,8 +83,11 @@ module.exports = class AWORMap {
 
     merge(list) {
 
-        this.name = this.name === 'unknown' ? list.name : this.name;
-        this.owner = this.owner === 'unknown' ? list.owner : this.owner;
+        if (!this.loaded) {
+            this.name = list.name;
+            this.owner = list.owner;
+            this.loaded = true;
+        }
 
         for (const receivedItem of list.items) {
             const item = this.items.get(receivedItem.name);

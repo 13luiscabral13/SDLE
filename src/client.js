@@ -60,60 +60,85 @@ if (isMainThread) {
   }
 
   let cart = new Cart(port);
-  cart.load(db)
-  
-  // GET requests
-  app.get('/lists', (req, res) => { // reads all the Users shopping lists
-    //const knownLists = crdt.getKnownLists();
-    //console.log(knownLists)
-    db.all('SELECT * FROM list', (err, rows) => {
-      if (err) {
-        console.error(err.message);
-        return;
-      }
-    
-      console.log(rows);
-      res.status(200).json(rows);
-    });
-  });
+  cart.load(db);
 
-  // get a list
-  app.get('/lists/:url', (req, res) => {
-    const url = req.params.url;
-    db.all('SELECT * FROM item WHERE list_url = ?', [url], (err, rows) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: 'An error occurred while fetching data.' });
-      }
 
-      console.log(rows);
-      res.status(200).json(rows);
-    });
-  });
 
-  // POST Requests
-  app.post('/createList', (req, res) => { // create a new shopping list
-    const name = req.body.name;
-    
-    cart.createList(name)
-  });
+// GET requests
+app.get('/lists', (req, res) => { // reads all the Users shopping lists
+  let info = cart.info();
+  console.log("Info: ", info);
+  res.status(200).send(info);
+});
 
+// get a list
+app.get('/lists/:url', (req, res) => {
+  const fullUrl = req.params.url;
+  const url = fullUrl.replace(/^\/lists\//, '');
+  // Fetch list name based on the provided URL
+  let list = cart.getList(url);
+  console.log("List: ", list);
+  res.status(200).send(list);
+});
   app.post('/deleteList', (req, res) => { // delete the list with that url
     const url = req.body.url;
-    
     const response = cart.deleteList(url)
-
     console.log(response)
     res.status(200).json(response);
   });
 
-  app.listen(port, () => {
-    console.log(`Web interface is running on http://localhost:${port}`);
-  });
 
-  const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: {port: port}});
 
-  setInterval(check_cart_isChanged, 5000)
+
+// POST Requests
+app.post('/createList', (req, res) => { // create a new shopping list
+  const name = req.body.name;
+  let list =  cart.createList(name);
+  console.log(list);
+  res.status(200).json({message: `Created the List`, url: list})
+});
+
+
+
+app.post('/joinList', (req, res) => { // join a list with that url
+  let listaUrl = req.body.listUrl;
+  cart.createList("Waiting for load...", listaUrl, 'unknown', false);
+  let createdList = cart.getList(listaUrl);
+  console.log("Cart Info ", cart.info());
+  res.status(200).send(json = {message: `Created the List`, url: listaUrl, list: createdList});
+});
+
+
+app.post('/changeItems', (req, res) => {
+  
+  const items = req.body.changes;
+  const listUrl = req.body.listUrl;
+  let addedChanges = items[0];
+  let removedChanges = items[1];
+  let updatedChanges = items[2];
+  for (var key in addedChanges) {
+    let itemToAdd = addedChanges[key];
+    cart.createItem(listUrl, itemToAdd['name']);
+    cart.updateQuantities(listUrl, itemToAdd['name'], 0, itemToAdd['total'])
+  }
+  for (var key in removedChanges) {
+    let itemToRemove = removedChanges[key];
+    cart.deleteItem(listUrl, itemToRemove['name']);
+  }
+  for (var key in updatedChanges) {
+    let itemToUpdate = updatedChanges[key];
+    cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['total']);
+  }
+  console.log(cart.getList(listUrl));
+  res.status(200).json({message: `Correctly changed items`});
+});
+
+app.listen(port, () => {
+  console.log(`Web interface is running on http://localhost:${port}`);
+});
+
+const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: {port: port}});
+setInterval(check_cart_isChanged, 5000)
 
   function check_cart_isChanged() {
     if(cart.changed()) {
