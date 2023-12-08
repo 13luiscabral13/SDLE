@@ -8,11 +8,9 @@ class Test {
 
     next() {
         const indexes = this.cc
-        .filter(entry => entry[0] === this.id && typeof entry[1] === 'number')
-        .map(entry => entry[1]);
-        console.log(indexes)
+            .filter(entry => entry[0] === this.id && typeof entry[1] === 'number')
+            .map(entry => entry[1]);
         const index = indexes.length ? Math.max(...indexes) : 0;
-        console.log(index)
         return [this.id, index + 1];
     }
 
@@ -43,6 +41,7 @@ class Test {
 
     merge(test) {
 
+        
     }
 }
 
