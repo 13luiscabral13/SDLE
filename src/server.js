@@ -40,8 +40,6 @@ const subscriber = new zmq.Subscriber
 subscriber.connect("tcp://localhost:9000")
 subscriber.subscribe("5500")
 subscriber.subscribe("5501")
-subscriber.subscribe("5001")
-subscriber.subscribe("5002")
 
 const publisher = new zmq.Publisher
 publisher.connect("tcp://localhost:9001")

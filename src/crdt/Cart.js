@@ -71,7 +71,6 @@ module.exports = class Cart {
         if (list) list.delete();
     }
 
-
     // Get list info in JSON format
     getList(url) {
         const list = this.lists.get(url);

@@ -55,7 +55,6 @@ if (isMainThread) {
         console.log('Schema has been executed successfully');
       }
     });
-    
   } else { // If db already exists
     var db = new sqlite3.Database(dbFile);
   }
@@ -83,16 +82,9 @@ app.get('/lists/:url', (req, res) => {
 });
   app.post('/deleteList', (req, res) => { // delete the list with that url
     const url = req.body.url;
-    let response;
-    if (cart.getList(url).owner == port) {
-      response = cart.deleteList(url)
-    }
-    else {
-      response = "You are not the owner of this list";
-    }
+    const response = cart.deleteList(url)
     console.log(response)
-    res.status(200).send(json = {message: response});
-
+    res.status(200).json(response);
   });
 
 
@@ -103,7 +95,7 @@ app.post('/createList', (req, res) => { // create a new shopping list
   const name = req.body.name;
   let list =  cart.createList(name);
   console.log(list);
-  res.status(200).send(json = {message: `Created the List`, url: list})
+  res.status(200).json({message: `Created the List`, url: list})
 });
 
 
@@ -113,7 +105,7 @@ app.post('/joinList', (req, res) => { // join a list with that url
   cart.createList("Waiting for load...", listaUrl, 'unknown', false);
   let createdList = cart.getList(listaUrl);
   console.log("Cart Info ", cart.info());
-  res.status(200).send(json = {message: `Joined the List`, url: listaUrl, list: createdList});
+  res.status(200).send(json = {message: `Created the List`, url: listaUrl, list: createdList});
 });
 
 

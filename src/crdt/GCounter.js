@@ -1,27 +1,25 @@
 module.exports = class GCounter {
 
-    constructor(owner, listName, listURL, itemName, type = 'current' | 'total') {
-        this.owner = owner;
-        this.listName = listName;
-        this.listURL = listURL;
-        this.itemName = itemName;
-        this.type = type;
-        this.quantity = 0;
+    constructor(current = 0, total = 0) {
+        this.current = current;
+        this.total = total;
     }
 
-    updateQuantity(newQuantity) {
-        if (this.quantity <= newQuantity) {
-            this.quantity = newQuantity;
-            return `Quantity of ${this.type} ${this.itemName} has been updated`;
-        }
-        return "Error: Invalid update, this counter only increments";
+    update(current, total) {
+        this.current = current;
+        this.total = total;
     }
 
     info() {
-        return this.quantity
+        return {
+            current: this.current,
+            total: this.total,
+        };
     }
 
-    merge(newQuantity) {
-        this.quantity = Math.max(this.quantity, newQuantity);
+    merge(GCounter) {
+        this.current = Math.max(this.current, GCounter.current);
+        this.total = Math.max(this.total, GCounter.total);
+        return this.info();
     }
 }
