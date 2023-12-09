@@ -54,6 +54,7 @@ module.exports = class AWORSet {
 
     itemInfo(itemName) {
 
+        // a quantidade de um item é o merge dos GCounters de todos os elementos
         if (this.elements().includes(itemName)) {
             let counter = new GCounter();
             for (const [item, gcounter, cc] of this.set) {
@@ -117,31 +118,24 @@ module.exports = class AWORSet {
         };  
     }
 
-    showElements() {
-        console.log(this.set);
-    }
-
-    showCC() {
-        console.log(this.cc);
-    }
-
-    show(message) {
-        console.log(message)
-        this.showElements();
-        this.showCC();
-    }
-
-    f(a, b) {
+    // a -> set
+    // b -> cc
+    preserve(a, b) {
 
         let result = []
         for (const elementA of a) {
-            const [xA, _, [wA, rA]] = elementA;
+            const {
+                name: nameA, 
+                counter: gcounterA, 
+                id: ccIdA, 
+                version: ccVersionA
+            } = elementA;
             let found = false;
 
-            for (const elementB of b) {
-                const [wB, rB] = elementB;
+            for (const ccB of b) {
+                const {id: ccIdB, version: ccVersionB} = ccB;
 
-                if (wA === wB && rA === rB) {
+                if (ccIdA === ccIdA && ccVersionA === ccVersionB) {
                     found = true;
                 }
             }
@@ -149,36 +143,47 @@ module.exports = class AWORSet {
             if (!found) result.push(elementA);
         }
 
-        return result;
+        return result.map((element) => {
+            return [element.name, new GCounter(element.current, element.total), [element.id, element.version]];
+        })
     }
 
     merge(AWORSet) {
 
-        const result = [];
+        const newSet = [];
 
-        // set interseção set'
+        // this.set INTERSECT AWORSet.set
         for (const elementA of this.set) {
-            const [xA, _, [wA, rA]] = elementA;
+            const [nameA, gcounterA, [ccIdA, ccVersionA]] = elementA;
     
-            for (const elementB of test.set) {
-                const [xB, _, [wB, rB]] = elementB;
+            for (const elementB of AWORSet.set) {
+                const {
+                    name: nameB, 
+                    counter: gcounterB, 
+                    id: ccIdB, version: 
+                    ccVersionB
+                } = elementB;
     
-                if (xA === xB && wA === wB && rA === rB) {
-                    result.push(elementA);
+                if (nameA === nameB && ccIdA === ccIdB && ccVersionA === ccVersionB) {
+                    newSet.push(elementA);
                     break;
                 }
             }
         }
 
-        // set interseção cc'
-        result.push(...this.f(this.set, test.cc))
+        // this.set INTERSECT AWORSet.cc
+        newSet.push(...this.preserve(this.toString().set, AWORSet.cc))
 
-        // set' interseção cc
-        result.push(...this.f(test.set, this.cc))
+        // AWORSet.set INTERSECT this.cc
+        newSet.push(...this.preserve(AWORSet.set, this.toString().cc))
 
-        this.set = Array.from(new Set([...result]));
+        // update internal set
+        this.set =  Array.from(new Set([...newSet]
+                         .map(JSON.stringify)), JSON.parse);;
 
-        // cc união cc'
-        this.cc = Array.from(new Set([...this.cc, ...test.cc]));
+        // this.causalContext UNION AWORSet.causalContext
+        const externalCC = AWORSet.cc.map((cc) => [cc.id, cc.version]);
+        this.cc = Array.from(new Set([...this.cc, ...externalCC]
+                       .map(JSON.stringify)), JSON.parse);
     }
 }
