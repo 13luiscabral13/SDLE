@@ -1,7 +1,8 @@
-# Report
+# Report - Presentation
 
 ## Topics
 
+- [0. Context and Overview](#0-context-and-overview)
 - [1. Technology](#1-technology)
 - [2. Local First](#2-local-first)
     - [2.1 Client Request Management](#21-client-request-management)
@@ -15,6 +16,12 @@
 - [5. References](#5-references)
 - [6. Members](#6-members)
 
+## 0. Context and overview
+
+- `Local-First Design`: prioritizes a local-first approach, running code on user devices for data persistence. This ensures offline functionality, enhancing user experience by allowing them to access and modify their shopping lists without an internet connection.
+
+- `Collaborative Lists`: ach shopping list has a unique ID, facilitating collaboration. Users with the list ID can seamlessly collaborate, enabling them to collectively manage and update shopping lists.
+
 ## 1. Technology
 
 The selected client-side technologies prioritize simplicity and user-friendliness, placing a strong emphasis on delivering a seamless experience, especially in web applications where ease of installation and use is paramount. The selected technologies for this project encompass:
@@ -22,19 +29,10 @@ The selected client-side technologies prioritize simplicity and user-friendlines
 - `Node.js`, for client and server side applications;
 - `SQLite3`, for database management system;
 
-This guarantees that the project operates seamlessly with straightforward commands:
-
-```bash
-$ node client.js <PORT>     # client
-$ node proxy.js             # proxy
-$ node server.js <PORT>     # server
-```
-
 Additionally, the project employed selected technologies and libraries for the implementation of distributed system connections, cloud infrastructure management, and the maintenance of integrity and consistency:
 
 - `ZeroMQ`, for high-performance asynchronous messaging;
 - `UUID`, for the generation of unique identifiers across the entire system;
-- `Async Mutex`, to inhibit issues of concurrency and deadlocks between threads;
 
 ## 2. Local First
 
