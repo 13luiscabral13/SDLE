@@ -8,11 +8,11 @@ module.exports = class AWORSet {
         this.owner = owner;
         this.name = name;
         this.url = url;
-        this.set = []; // (element, quantity, cc)
-        this.cc = [];  // (cc) = (id, version)
+        this.set = []; // [(element, gcounter, cc)]
+        this.cc = [];  // [(cc)] = [(id, version)]
     }
 
-    next() {
+    utag() {
         const indexes = this.cc
             .filter(entry => entry[0] === this.owner && typeof entry[1] === 'number')
             .map(entry => entry[1]);
@@ -22,9 +22,9 @@ module.exports = class AWORSet {
 
     createItem(itemName) {
         if (!this.elements().includes(itemName)) {
-            const d = this.next(this.cc);
-            this.set.push([itemName, new GCounter(), d]);
-            this.cc.push(d);
+            const tag = this.utag();
+            this.set.push([itemName, new GCounter(), tag]);
+            this.cc.push(tag);
             return "Item successfully added";
         }
         return "Error: This item already exists in this list";
@@ -37,7 +37,7 @@ module.exports = class AWORSet {
     }
 
     updateQuantities(itemName, current, total) {
-        if (this.elements().includes(element)) {
+        if (this.elements().includes(itemName)) {
             for (const [element, gcounter, causalContext] of this.set) {
                 if (element === itemName) {
                     gcounter.merge({current: current, total: total});
@@ -52,14 +52,58 @@ module.exports = class AWORSet {
         return this.set.map((node) => node[0]);
     }
 
+    itemInfo(itemName) {
+
+        if (this.elements().includes(itemName)) {
+            let counter = new GCounter();
+            for (const [item, gcounter, cc] of this.set) {
+                if (item === itemName) {
+                    counter.merge(gcounter);
+                }
+            }
+
+            return {
+                name: itemName,
+                current: counter.current,
+                total: counter.total,
+            }
+        }
+    }
+
+    toString() {
+
+        const cc = this.cc.map(([id, version]) => {
+            return {
+                id: id,
+                version: version,
+            }
+        });
+
+        const set = this.set.map(([item, counter, [id, version]]) => {
+            return {
+                name: item,
+                current: counter.current,
+                total: counter.total,
+                id: id,
+                version: version,
+            };
+        })
+
+        return {
+            name: this.name,
+            url: this.url, 
+            deleted: this.deleted,
+            owner: this.owner,
+            loaded: this.loaded,
+            cc: cc,
+            set: set,
+        };  
+    }
+
     info() {
-        const items = Array.from(this.set).map(([itemName, gcounter, causalContext]) => {
-                const totals = gcounter.info();
-                return {
-                    "name": itemName,
-                    "current": totals.current,
-                    "total": totals.total,
-                };
+
+        const items = Array.from(this.set).map(([itemName, c, cc]) => {
+                return this.itemInfo(itemName);
             }
         )
 
@@ -108,7 +152,7 @@ module.exports = class AWORSet {
         return result;
     }
 
-    merge(test) {
+    merge(AWORSet) {
 
         const result = [];
 

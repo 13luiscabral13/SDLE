@@ -5,11 +5,6 @@ module.exports = class GCounter {
         this.total = total;
     }
 
-    update(current, total) {
-        this.current = current;
-        this.total = total;
-    }
-
     info() {
         return {
             current: this.current,
