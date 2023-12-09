@@ -1,6 +1,6 @@
 const zmq = require("zeromq")
 const cluster = require("cluster")
-const workerProcess = require('./workers/workerProcess.js');
+const startServer = require('./server.js');
 const workers = 3
 
 const context = new zmq.Context()
@@ -15,16 +15,18 @@ async function run() {
     await backend.bind('tcp://*:9000');
     console.log('Binding backend on port 9000');
 
+    const proxy = new zmq.Proxy(frontend, backend)
+
     // Cleanup when the process is terminated
     process.on('SIGINT', () => {
         frontend.close();
         backend.close();
-        //proxy.terminate();
+        proxy.terminate();
         context.term();
         console.log('Proxy terminated');
     });
 
-    //proxy.run();
+    proxy.run();
     console.log('Proxy running...');
 }
 
@@ -37,5 +39,5 @@ if (cluster.isMaster) {
 
     run()
 } else {
-    workerProcess(process.env.PORT)
+    startServer(process.env.PORT)
 }

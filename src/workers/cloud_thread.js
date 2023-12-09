@@ -33,6 +33,5 @@ if (!isMainThread) {
         }
     });
     
-    //setInterval(subscribeProxy, 5000);
-    subscribeProxy()
+    setInterval(subscribeProxy, 5000);
 }
