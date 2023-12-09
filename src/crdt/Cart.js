@@ -68,18 +68,9 @@ module.exports = class Cart {
     deleteList(url) {
         this.hasChange = true;
         let list = this.lists.get(url);
-        if (list) { 
-
-            // List is deleted only by its owner
-            if (list.owner === this.owner) {
-                this.lists.set(url, null);
-                return "List deleted";
-            } else {
-                return "Error: You don't have permissions to delete this list"
-            }
-        }
-        return "Error: This list doesn't exist in your system";
+        if (list) list.delete();
     }
+
 
     // Get list info in JSON format
     getList(url) {
@@ -166,12 +157,13 @@ module.exports = class Cart {
 
             // Crio a lista do meu lado
             if (!list) {
-                this.createList(receivedList.name, receivedList.url, receivedList.owner);
+                this.createList(receivedList.name, receivedList.url, receivedList.owner, receivedList.loaded);
                 list = this.lists.get(receivedList.url);
             }
 
             // Se a lista recebida foi eliminada, eliminar a minha também
-            if (receivedList.deleted && !list.deleted) {
+            // Se a lista recebida não foi eliminada mas eu tenho elimiminada, deixar como está
+            if ((receivedList.deleted && !list.deleted) || (!receivedList.deleted && list.deleted)) {
                 this.deleteList(receivedList.url);
             }
 
