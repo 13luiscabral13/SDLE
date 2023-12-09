@@ -6,8 +6,6 @@ if (isMainThread) {
   const fs = require('fs');
   const path = require('path');
   const sqlite3 = require('sqlite3').verbose();
-  const crypto = require('crypto');
-  const zmq = require("zeromq");
   
   const app = express();
   app.use(express.json());
@@ -63,90 +61,124 @@ if (isMainThread) {
   let cart = new Cart(port);
   cart.load(db);
 
+  let mergeLock = false;
+  async function withMergeLock(callback) {
+    while (mergeLock) {
+      // Wait until the lock is released
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  
+    mergeLock = true;
+  
+    try {
+      // Perform the critical section
+      await callback();
+    } finally {
+      // Release the lock
+      mergeLock = false;
+    }
+  }
 
+  // GET requests
+  app.get('/lists', (req, res) => { // reads all the Users shopping lists
+    let info = cart.info();
+    console.log("Info: ", info);
+    res.status(200).send(info);
+  });
 
-// GET requests
-app.get('/lists', (req, res) => { // reads all the Users shopping lists
-  let info = cart.info();
-  console.log("Info: ", info);
-  res.status(200).send(info);
-});
+  // get a list
+  app.get('/lists/:url', (req, res) => {
+    const fullUrl = req.params.url;
+    const url = fullUrl.replace(/^\/lists\//, '');
+    // Fetch list name based on the provided URL
+    let list = cart.getList(url);
+    console.log("List: ", list);
+    res.status(200).send(list);
+  });
 
-// get a list
-app.get('/lists/:url', (req, res) => {
-  const fullUrl = req.params.url;
-  const url = fullUrl.replace(/^\/lists\//, '');
-  // Fetch list name based on the provided URL
-  let list = cart.getList(url);
-  console.log("List: ", list);
-  res.status(200).send(list);
-});
-  app.post('/deleteList', (req, res) => { // delete the list with that url
+  app.post('/deleteList', async (req, res) => { // delete the list with that url
     const url = req.body.url;
     let response;
     if (cart.getList(url).owner == port) {
-      response = cart.deleteList(url)
+      try {
+        await withMergeLock(async () => {
+          response = cart.deleteList(url)
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
     else {
       response = "You are not the owner of this list";
     }
     console.log(response)
     res.status(200).send(json = {message: response});
-
   });
 
+  // POST Requests
+  app.post('/createList', async (req, res) => { // create a new shopping list
+    const name = req.body.name;
+    let list = null
+    try {
+      await withMergeLock(async () => {
+        list = cart.createList(name);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    console.log(list);
+    res.status(200).send(json = {message: `Created the List`, url: list})
+  });
 
+  app.post('/joinList', async (req, res) => { // join a list with that url
+    let listaUrl = req.body.listUrl;
+    try {
+      await withMergeLock(async () => {
+        cart.createList("Waiting for load...", listaUrl, 'unknown', false);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    let createdList = cart.getList(listaUrl);
+    console.log("Cart Info ", cart.info());
+    res.status(200).send(json = {message: `Joined the List`, url: listaUrl, list: createdList});
+  });
 
+  app.post('/changeItems', async (req, res) => {
+    const items = req.body.changes;
+    const listUrl = req.body.listUrl;
+    let addedChanges = items[0];
+    let removedChanges = items[1];
+    let updatedChanges = items[2];
+    try {
+      await withMergeLock(async () => {
+        for (var key in addedChanges) {
+          let itemToAdd = addedChanges[key];
+          cart.createItem(listUrl, itemToAdd['name']);
+          cart.updateQuantities(listUrl, itemToAdd['name'], 0, itemToAdd['total'])
+        }
+        for (var key in removedChanges) {
+          let itemToRemove = removedChanges[key];
+          cart.deleteItem(listUrl, itemToRemove['name']);
+        }
+        for (var key in updatedChanges) {
+          let itemToUpdate = updatedChanges[key];
+          cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['total']);
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    } 
+    console.log(cart.getList(listUrl));
+    res.status(200).json({message: `Correctly changed items`});
+  });
 
-// POST Requests
-app.post('/createList', (req, res) => { // create a new shopping list
-  const name = req.body.name;
-  let list =  cart.createList(name);
-  console.log(list);
-  res.status(200).send(json = {message: `Created the List`, url: list})
-});
+  app.listen(port, () => {
+    console.log(`Web interface is running on http://localhost:${port}`);
+  });
 
-
-
-app.post('/joinList', (req, res) => { // join a list with that url
-  let listaUrl = req.body.listUrl;
-  cart.createList("Waiting for load...", listaUrl, 'unknown', false);
-  let createdList = cart.getList(listaUrl);
-  console.log("Cart Info ", cart.info());
-  res.status(200).send(json = {message: `Joined the List`, url: listaUrl, list: createdList});
-});
-
-
-app.post('/changeItems', (req, res) => {
-  
-  const items = req.body.changes;
-  const listUrl = req.body.listUrl;
-  let addedChanges = items[0];
-  let removedChanges = items[1];
-  let updatedChanges = items[2];
-  for (var key in addedChanges) {
-    let itemToAdd = addedChanges[key];
-    cart.createItem(listUrl, itemToAdd['name']);
-    cart.updateQuantities(listUrl, itemToAdd['name'], 0, itemToAdd['total'])
-  }
-  for (var key in removedChanges) {
-    let itemToRemove = removedChanges[key];
-    cart.deleteItem(listUrl, itemToRemove['name']);
-  }
-  for (var key in updatedChanges) {
-    let itemToUpdate = updatedChanges[key];
-    cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['total']);
-  }
-  console.log(cart.getList(listUrl));
-  res.status(200).json({message: `Correctly changed items`});
-});
-
-app.listen(port, () => {
-  console.log(`Web interface is running on http://localhost:${port}`);
-});
-
-const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: {port: port}});
-setInterval(check_cart_isChanged, 5000)
+  const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: {port: port}});
+  setInterval(check_cart_isChanged, 5000)
 
   function check_cart_isChanged() {
     if(cart.changed()) {
@@ -157,17 +189,20 @@ setInterval(check_cart_isChanged, 5000)
   const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart.toString() } });
 
   // Handle messages from the database update thread
-  cloudThread.on('message', (message) => {
+  cloudThread.on('message', async (message) => {
     if(message.type === 'loadCart'){
       cloudThread.postMessage({ type: 'updateCart', cart: cart.toString() });
     } else if(message.type === 'responseFromServer') {
-      //lock
-      cart.merge(message.cart, false)
-      //unlock
+      try {
+        await withMergeLock(async () => {
+          cart.merge(message.cart);
+        });
+      } catch (error) {
+        console.error(error);
+      }
     } else {
       // Handle other types of messages from the database update thread
       console.log('Message from cloud thread:', message);
     }
   });
-
 }

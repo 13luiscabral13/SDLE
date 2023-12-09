@@ -12,7 +12,7 @@ async function updateNeighboor(neighborPort, cart) {
     //Servidor atual conecta-se ao vizinho
     const requester = new zmq.Request;
     requester.connect(`tcp://localhost:${neighborPort}`);
-    console.log(`\nSending update to server ${neighborPort}`);
+    //console.log(`\nSending update to server ${neighborPort}`);
 
     // Servidor atual envia cart ao vizinho
     requester.send(cart);
@@ -28,7 +28,7 @@ async function updateNeighboor(neighborPort, cart) {
         // Espera pela resposta do servidor vizinho ou timeout
         const [response] = await Promise.race([requester.receive(), timeoutPromise]);
 
-        console.log(`Received ACK from server ${neighborPort}`);
+        //console.log(`Received ACK from server ${neighborPort}`);
         updated++;
     } catch (error) {
         console.error(error.message);
@@ -66,7 +66,7 @@ async function listeningToUpdates(httpPort) {
 
         if (messages.length > 0) {
             const [request] = messages;
-            console.log(`\nReceived update`);
+            //console.log(`\nReceived update`);
 
             // Worker thread avisa a main thread de que recebeu um novo update e precisa de fazer merge do cart
             parentPort.postMessage({ type: 'updateCart', cart: request.toString()});
