@@ -15,8 +15,8 @@ if (!isMainThread) {
         // waiting for the response from MainThread
         await new Promise(resolve => { setTimeout(resolve, 10) })
         
-        await sock.send([port, cart])
-        for await (const [id, response] of sock) {
+        await sock.send(["", port, cart])
+        for await (const [delimiter, id, response] of sock) {
             console.log("received a message related to:", id.toString(), "containing message:", response.toString())
             if(id.toString() == port.toString()) {
                 cart = response.toString()

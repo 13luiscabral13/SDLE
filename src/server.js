@@ -37,7 +37,7 @@ let cart = new Cart(port);
 cart.load(db)
 
 const context = new zmq.Context()
-const sock = new zmq.Request(context)
+const sock = new zmq.Reply(context)
 sock.connect("tcp://localhost:9000")
 
 async function client_requests() {
