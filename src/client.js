@@ -6,8 +6,6 @@ if (isMainThread) {
   const fs = require('fs');
   const path = require('path');
   const sqlite3 = require('sqlite3').verbose();
-  const crypto = require('crypto');
-  const zmq = require("zeromq");
   
   const app = express();
   app.use(express.json());

@@ -2,30 +2,18 @@ const zmq = require("zeromq")
 
 const context = new zmq.Context()
 
-// XSUB socket
-let frontend_sub = null;
-let frontend_pub = null;
+let frontend = null;
 async function frontend_run() {
-    frontend_sub = new zmq.XSubscriber(context)
-    await frontend_sub.bind('tcp://*:8000');
-    console.log('Binding frontend_sub on port 8000');
-
-    frontend_pub = new zmq.XPublisher(context)
-    await frontend_pub.bind('tcp://*:8001');
-    console.log('Binding frontend_pub on port 8001'); 
+    frontend = new zmq.Router(context)
+    await frontend.bind('tcp://*:8000');
+    console.log('Binding frontend on port 8000');
 }
 
-// XPUB socket
-let backend_sub = null;
-let backend_pub = null;
+let backend = null
 async function backend_run() {
-    backend_sub = new zmq.XSubscriber(context)
-    await backend_sub.bind('tcp://*:9001');
-    console.log('Binding backend_sub on port 9001');
-
-    backend_pub = new zmq.XPublisher(context)
-    await backend_pub.bind('tcp://*:9000');
-    console.log('Binding backend_pub on port 9000');
+    backend = new zmq.Router(context)
+    await backend.bind('tcp://*:9000');
+    console.log('Binding backend on port 9000');
 }
 
 
@@ -34,8 +22,7 @@ async function run() {
     await backend_run();
 
     // Create a message proxy
-    const proxy_1 = new zmq.Proxy(frontend_sub, backend_pub);
-    const proxy_2 = new zmq.Proxy(frontend_pub, backend_sub);
+    const proxy = new zmq.Proxy(frontend, backend);
 
     // Cleanup when the process is terminated
     process.on('SIGINT', () => {
@@ -45,8 +32,7 @@ async function run() {
       console.log('Proxy terminated');
     });
 
-    proxy_1.run();
-    proxy_2.run();
+    proxy.run();
     console.log('Proxy running...');
 }
 

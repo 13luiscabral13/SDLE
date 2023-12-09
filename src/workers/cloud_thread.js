@@ -5,12 +5,9 @@ const zmq = require("zeromq")
 if (!isMainThread) {
     let { port , cart } = workerData;
 
-    const subscriber = new zmq.Subscriber
-    subscriber.connect("tcp://localhost:8001")
-    subscriber.subscribe(port)
-
-    const publisher = new zmq.Publisher
-    publisher.connect("tcp://localhost:8000")
+    const context = new zmq.Context()
+    const sock = new zmq.Request(context)
+    sock.connect("tcp://localhost:8000")
 
     async function subscribeProxy() {
         parentPort.postMessage({ type: 'loadCart' });
@@ -18,8 +15,8 @@ if (!isMainThread) {
         // waiting for the response from MainThread
         await new Promise(resolve => { setTimeout(resolve, 10) })
         
-        await publisher.send([port, cart])
-        for await (const [id, response] of subscriber) {
+        await sock.send([port, cart])
+        for await (const [id, response] of sock) {
             console.log("received a message related to:", id.toString(), "containing message:", response.toString())
             if(id.toString() == port.toString()) {
                 cart = response.toString()
@@ -36,6 +33,6 @@ if (!isMainThread) {
         }
     });
     
-    setInterval(subscribeProxy, 5000);
-    //subscribeProxy()
+    //setInterval(subscribeProxy, 5000);
+    subscribeProxy()
 }

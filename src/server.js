@@ -36,22 +36,18 @@ if (!fs.existsSync(dbFile)) { // create local database if there isnt one
 let cart = new Cart(port);
 cart.load(db)
 
-const subscriber = new zmq.Subscriber
-subscriber.connect("tcp://localhost:9000")
-subscriber.subscribe("5500")
-subscriber.subscribe("5501")
-
-const publisher = new zmq.Publisher
-publisher.connect("tcp://localhost:9001")
+const context = new zmq.Context()
+const sock = new zmq.Request(context)
+sock.connect("tcp://localhost:9000")
 
 async function client_requests() {
-  for await (const [id, msg] of subscriber) {
+  for await (const [id, msg] of sock) {
     console.log("received a message related to:", id.toString(), "containing message:", msg.toString())
     
     const response = cart.merge(msg, true)
     console.log(cart.info())
 
-    await publisher.send([id, response])
+    await sock.send([id, response])
   }
 }
 
