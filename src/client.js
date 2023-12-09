@@ -61,6 +61,24 @@ if (isMainThread) {
   let cart = new Cart(port);
   cart.load(db);
 
+  let mergeLock = false;
+  async function withMergeLock(callback) {
+    while (mergeLock) {
+      // Wait until the lock is released
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  
+    mergeLock = true;
+  
+    try {
+      // Perform the critical section
+      await callback();
+    } finally {
+      // Release the lock
+      mergeLock = false;
+    }
+  }
+
   // GET requests
   app.get('/lists', (req, res) => { // reads all the Users shopping lists
     let info = cart.info();
@@ -146,17 +164,20 @@ if (isMainThread) {
   const cloudThread = new Worker('./workers/cloud_thread.js', { workerData: { port: port, cart: cart.toString() } });
 
   // Handle messages from the database update thread
-  cloudThread.on('message', (message) => {
+  cloudThread.on('message', async (message) => {
     if(message.type === 'loadCart'){
       cloudThread.postMessage({ type: 'updateCart', cart: cart.toString() });
     } else if(message.type === 'responseFromServer') {
-      //lock
-      cart.merge(message.cart, false)
-      //unlock
+      try {
+        await withMergeLock(async () => {
+          cart.merge(message.cart);
+        });
+      } catch (error) {
+        console.error(error);
+      }
     } else {
       // Handle other types of messages from the database update thread
       console.log('Message from cloud thread:', message);
     }
   });
-
 }
