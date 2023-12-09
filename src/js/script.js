@@ -46,7 +46,7 @@ function joinList() {
       if (json.message == "Joined the List") {
         createErrorPopup("Trying to join the Shopping List...");
         let myElm = {name: json.list.name, url: json.url};
-        shoppingLists.append(createNotLoadedShoppingList(myElm.name));
+        shoppingLists.append(createNotLoadedShoppingList());
 
       } else {
         createErrorPopup("Couldn't join the Shopping List");
@@ -60,7 +60,17 @@ function joinList() {
 // ------------------- Adding a Shopping List -------------------
 form.addEventListener("submit", function (event) {
   event.preventDefault();
-  createList()
+  const title = document.getElementById("create-list-name");
+  const titleText = title.value
+  let shoppingLists = document.querySelectorAll('.shopping-list-item');
+  console.log(shoppingLists);
+  for (var key in shoppingLists) {
+    if (shoppingLists[key].getAttribute('id').split('shopping-list-name-')[1] == titleText) {
+      createErrorPopup("You can't create a list with the same name!");
+      return;
+    }
+  }
+  createList(titleText)
 });
 
 // ------------------- Joining a Shopping List -------------------
@@ -78,7 +88,7 @@ function updateTime() {
 }
 
 updateTime(); // update immediately
-setInterval(updateTime, 5000); // update every second
+//setInterval(updateTime, 5000); // update every second
 
 // ------------------- Server Part -------------------
 // POST - create a new shoppingList
@@ -154,11 +164,9 @@ function createErrorPopup(errorText) {
   document.body.appendChild(modalError);
 }
 
-function createList() {
+function createList(titleText) {
   modal.hidden = true
 
-  const title = document.getElementById("create-list-name");
-  const titleText = title.value
 
   const jsonToSend = {
     name: titleText
@@ -243,12 +251,12 @@ function getOneList(listUrl) {
     });
 }
 
-function createNotLoadedShoppingList(element) {
+function createNotLoadedShoppingList() {
   const shoppingList = document.createElement('div')
   shoppingList.classList.add('shopping-list-item')
-  shoppingList.id = "shopping-list-name-" + element.name;
+  shoppingList.id = "shopping-list-name-WaitingForLoad";
   const title = document.createElement('h1')
-  title.textContent = element.name
+  title.textContent = "Waiting for load";
   const divtitle = document.createElement('div')
   divtitle.id = "div-title"
   divtitle.append(title)
@@ -289,6 +297,7 @@ function createShoppingList(element) {
     })
 
     function checkremoveList(url, name) {
+      if (document.getElementById("modalDel") == null) {
       // Create modal container
       const modalDel = document.createElement("div");
       modalDel.classList.add("modal");
@@ -321,16 +330,16 @@ function createShoppingList(element) {
       const yesBtn = document.createElement("button");
       yesBtn.textContent = "Yes";
       yesBtn.addEventListener("click", () => {
-        // Handle the removal logic, e.g., call a function to delete the item
+        // Handle the removal logic, e.g., call a function to delete the list
         removeList(url, name);
-        modalDel.style.display = "none"; // Close the modal after handling removal
+        modalDel.remove();
       });
 
       // Create "No" button
       const noBtn = document.createElement("button");
       noBtn.textContent = "No";
       noBtn.addEventListener("click", () => {
-        modalDel.style.display = "none"; // Close the modal without removing the item
+        modalDel.remove();
       });
 
       // Append elements to the modal content
@@ -349,6 +358,7 @@ function createShoppingList(element) {
       // Display the modal
       modalDel.style.display = "block";
       // TODO: complete function
+    }
     }
 
     const shareBtn = document.createElement('button')
@@ -394,12 +404,12 @@ function display_shopping_lists(data) {
         shoppingLists.appendChild(shoppingList)
       }
       else {
-        let shoppingList = createNotLoadedShoppingList(element);
+        let shoppingList = createNotLoadedShoppingList();
         shoppingLists.appendChild(shoppingList)
       }
     }
   });
-}
+} 
 
 function modalWithURL(url, listName) {
   // Create the modal
@@ -645,7 +655,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
       if (checkInteger(text)) {
         itemQua.innerText = itemData.total;
         itemQua.contentEditable = false; // Disable contentEditable
-        alert("Please input only integers")
+        alert("Please input only numbers")
       }
       else if (checkSmaller(parseInt(text), itemData.total)) {
         itemQua.innerText = itemData.total;
@@ -682,6 +692,8 @@ function modalShoppingList(data, listUrl) {
   name.textContent = dataName;
   name.style.paddingTop = "10px";
   ul.innerHTML = "";
+  ul.style.height = "90%";
+  ul.style.overflowY = "scroll";
   index = -1;
   dataItems.forEach(itemData => {
     index = index + 1;
@@ -785,7 +797,7 @@ function modalShoppingList(data, listUrl) {
       if (!checkIfItemExists(itemNameInput.value.trim(), updatedArray)) {
         if (itemNameInput.value.trim() != "" && /^\d+$/.test(itemQuantityGoalInput.value.trim())) {
           if (parseInt(itemQuantityGoalInput.value.trim()) <= 0) {
-            alert("The quantity cannot be a non-positive integer!");
+            alert("The quantity cannot be a non-positive number!");
             console.log("Error!");
           }
           else {
@@ -805,11 +817,11 @@ function modalShoppingList(data, listUrl) {
           console.log("Error!");
         }
         else if (itemNameInput.value.trim() != "" && !/^\d+$/.test(itemQuantityGoalInput.value.trim())) {
-          alert("Quantity can only be an integer!")
+          alert("Quantity can only be an number!")
           console.log("Error!");
         }
         else {
-          alert("The name cannot be empty and the quantity must be an integer!")
+          alert("The name cannot be empty and the quantity must be an number!")
           console.log("Error!");
         }
       }
@@ -891,6 +903,7 @@ function modalShoppingList(data, listUrl) {
 
   // Add an event listener to hide the modal when the close button is clicked
   closeButton.addEventListener("click", function () {
+    updatedArray = initialArray;
     shopList.hidden = true;
     checkButton.hidden = true;
   });
