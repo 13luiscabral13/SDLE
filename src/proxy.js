@@ -1,7 +1,8 @@
 const zmq = require("zeromq")
 const cluster = require("cluster")
 const startServer = require('./server.js');
-const workers = 3
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 
 const context = new zmq.Context()
 
@@ -32,10 +33,10 @@ async function run() {
 
 // Distribute the workers
 if (cluster.isMaster) {
-    const port = 5000
-    for (var i = 0; i < workers; i++) cluster.fork({
-        "PORT": port+i
-      });
+    // juntar ficheiro de configurações
+    for (var i = 0; i < config.servers.length; i++) cluster.fork({
+        "PORT": config.servers[i]
+    });
 
     run()
 } else {

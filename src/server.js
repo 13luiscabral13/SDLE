@@ -30,7 +30,21 @@ async function startServer(port) {
     let cart = new Cart(port);
     cart.load(db)
 
-    //const neighborThread = new Worker('./workers/neighborThread.js', { workerData: { port: port, cart: cart.toString() } });
+    // Worker thread responsável por enviar updates aos vizinhos e receber updates vindos dos outros servers
+    const updateWorker = new Worker('./workers/servers_thread.js', { workerData: { httpPort: port } });
+
+    updateWorker.on('message', (message) => {
+        if(message.type === 'updateCart') {
+            cart.merge(message.cart);
+        }
+    })
+
+    //De 5 em 5 segundos, server manda updates para os seus vizinhos
+    async function sendingUpdates() {
+        updateWorker.postMessage({ type: 'updateNeighbors', cart: cart.toString()});
+    }
+
+    setInterval(sendingUpdates, 5000);
 
     const context = new zmq.Context()
     const sock = new zmq.Reply(context)

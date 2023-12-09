@@ -1,4 +1,4 @@
-const AWORMap = require('./AWORMap.js');
+const AWORSet = require('./AWORSet.js');
 const { v4: uuidv4 } = require('uuid');
 
 module.exports = class Cart {
@@ -60,7 +60,7 @@ module.exports = class Cart {
         this.hasChange = true;
         const id = url ?? uuidv4();
         const own = owner ?? this.owner;
-        let list = new AWORMap(own, name, id, loaded);
+        let list = new AWORSet(own, this.owner, name, id, loaded);
         this.lists.set(id, list);
         return id;
     }
@@ -70,7 +70,6 @@ module.exports = class Cart {
         let list = this.lists.get(url);
         if (list) list.delete();
     }
-
 
     // Get list info in JSON format
     getList(url) {
@@ -103,7 +102,6 @@ module.exports = class Cart {
     }
 
     updateQuantities(url, itemName, current, total) {
-        console.log("Updating: ", itemName, " with current: ", current, " and total: ", total);
         this.hasChange = true;
         let list = this.lists.get(url);
         if (list) {
