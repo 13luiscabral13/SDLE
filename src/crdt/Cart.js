@@ -71,6 +71,7 @@ module.exports = class Cart {
         if (list) list.delete();
     }
 
+
     // Get list info in JSON format
     getList(url) {
         const list = this.lists.get(url);
@@ -156,7 +157,7 @@ module.exports = class Cart {
 
             // Crio a lista do meu lado
             if (!list) {
-                this.createList(receivedList.name, receivedList.url, receivedList.owner);
+                this.createList(receivedList.name, receivedList.url, receivedList.owner, receivedList.loaded);
                 list = this.lists.get(receivedList.url);
             }
 

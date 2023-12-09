@@ -78,13 +78,14 @@ module.exports = class AWORMap {
             url: this.url, 
             deleted: this.deleted,
             owner: this.owner,
+            loaded: this.loaded,
             items: items,
         }; 
     }
 
     merge(list) {
 
-        if (!this.loaded) {
+        if (!this.loaded && list.loaded) {
             this.name = list.name;
             this.owner = list.owner;
             this.loaded = true;

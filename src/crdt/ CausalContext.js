@@ -1,5 +1,15 @@
 class Test {
 
+    /*
+    Otimizações:
+
+    há possibilidade de existir dois morangos, cada um com o seu cc
+    nesse caso cria-se um morango novo, com o max entre os valores, e aplicando um novo cc
+
+    penso que não dá para diminuir o cc global, é lidar
+
+    */
+
     constructor(id) {
         this.id = id;
         this.set = []; // (element, quantity, cc)
