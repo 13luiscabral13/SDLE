@@ -26,6 +26,8 @@ cancelBtn.addEventListener('click', () => {
   modal.hidden = true
 });
 
+
+
 function joinList() {
   console.log("Entered join list");
   const listUrl = document.getElementById('join-list-name').value;
@@ -41,11 +43,13 @@ function joinList() {
   })
     .then(response => response.json())
     .then(json => {
-      if ('error' in json) {
-        console.log('Error adding the table', error);
+      if (json.message == "Joined the List") {
+        createErrorPopup("Trying to join the Shopping List...");
+        let myElm = {name: json.list.name, url: json.url};
+        shoppingLists.append(createNotLoadedShoppingList(myElm.name));
+
       } else {
-        console.log('Successfully joined Shopping List!');
-        console.log(json);
+        createErrorPopup("Couldn't join the Shopping List");
       }
     })
     .catch(error => console.log(error));
@@ -78,6 +82,78 @@ setInterval(updateTime, 5000); // update every second
 
 // ------------------- Server Part -------------------
 // POST - create a new shoppingList
+
+function createSuccessPopup(successText) {
+  const modalSuccess = document.createElement("div");
+  const modalClose = createButtonWithIcon("fas fa-times");
+  modalClose.style.position = "absolute";
+  modalClose.style.top = "10px";
+  modalClose.style.right = "10px";
+  modalClose.style.cursor = "pointer";
+  modalClose.addEventListener("click", function () {
+    modalSuccess.remove();
+  });
+  modalSuccess.classList.add("modal");
+  modalSuccess.style.zIndex = "1001";
+  modalSuccess.id = "modalSuccess";
+  // Create content for the modal
+  const modalContent = document.createElement("div");
+  modalContent.classList.add("modal-content");
+  modalContent.style.width = "30%";
+  modalContent.style.height = "20%";
+  modalContent.style.textAlign = "center";
+  modalContent.style.padding = "15px";
+  modalContent.style.backgroundColor = "white";
+  modalContent.style.borderRadius = "5px";
+  modalContent.style.position = "relative";
+  const modalText = document.createElement("p");
+  modalText.textContent = successText;
+  modalText.style.fontFamily = "Arial, sans-serif";
+  modalText.style.fontSize = "18px";
+  modalText.style.color = "blue";
+  modalText.style.fontWeight = "bold";
+  modalContent.appendChild(modalText);
+  modalContent.appendChild(modalClose);
+  modalSuccess.appendChild(modalContent);
+  document.body.appendChild(modalSuccess);
+}
+
+
+function createErrorPopup(errorText) {
+  const modalError = document.createElement("div");
+  const modalClose = createButtonWithIcon("fas fa-times");
+  modalClose.style.position = "absolute";
+  modalClose.style.top = "10px";
+  modalClose.style.right = "10px";
+  modalClose.style.cursor = "pointer";
+  modalClose.addEventListener("click", function () {
+    modalError.remove();
+  });
+  modalError.classList.add("modal");
+  modalError.style.zIndex = "1001";
+  modalError.id = "modalError";
+  // Create content for the modal
+  const modalContent = document.createElement("div");
+  modalContent.classList.add("modal-content");
+  modalContent.style.width = "30%";
+  modalContent.style.height = "20%";
+  modalContent.style.textAlign = "center";
+  modalContent.style.padding = "15px";
+  modalContent.style.backgroundColor = "white";
+  modalContent.style.borderRadius = "5px";
+  modalContent.style.position = "relative";
+  const modalText = document.createElement("p");
+  modalText.textContent = errorText;
+  modalText.style.fontFamily = "Arial, sans-serif";
+  modalText.style.fontSize = "18px";
+  modalText.style.color = "red";
+  modalText.style.fontWeight = "bold";
+  modalContent.appendChild(modalText);
+  modalContent.appendChild(modalClose);
+  modalError.appendChild(modalContent);
+  document.body.appendChild(modalError);
+}
+
 function createList() {
   modal.hidden = true
 
@@ -97,20 +173,19 @@ function createList() {
   })
     .then(response => response.json())
     .then(json => {
-      if ('error' in json) {
-        console.log('Error adding the table', error);
-      } else {
-        console.log('Successfully added Shopping List!');
-        console.log(json);
+      if (json.message == "Created the List") {
+        console.log('Successfully created ' + titleText + '!');
         let myElm = {name: titleText, url: json.url};
         shoppingLists.append(createShoppingList(myElm));
+      } else {
+        createErrorPopup("Couldn't create " + titleText + "!");
       }
     })
     .catch(error => console.log(error));
 }
 
 // POST - removes a Shopping List
-function removeList(url_to_delete) {
+function removeList(url_to_delete, name) {
   const jsonToSend = {
     url: url_to_delete,
   }
@@ -124,10 +199,12 @@ function removeList(url_to_delete) {
   })
     .then(response => response.json())
     .then(json => {
-      if ('error' in json) {
-        console.log('Error adding the table', error);
-      } else {
-        console.log('Successfully deleted table!');
+      if (json.message == "You are not the owner of this list") {
+        createErrorPopup("You are not the owner of list " + name + "!" );
+      }
+      else {
+        createSuccessPopup("Successfully deleted " + name + "!");
+        document.getElementById("shopping-list-name-" + name).remove();
       }
     })
     .catch(error => console.log(error));
@@ -166,8 +243,24 @@ function getOneList(listUrl) {
     });
 }
 
-function createShoppingList(element) {
+function createNotLoadedShoppingList(element) {
   const shoppingList = document.createElement('div')
+  shoppingList.classList.add('shopping-list-item')
+  shoppingList.id = "shopping-list-name-" + element.name;
+  const title = document.createElement('h1')
+  title.textContent = element.name
+  const divtitle = document.createElement('div')
+  divtitle.id = "div-title"
+  divtitle.append(title)
+  const divinfo = document.createElement('div')
+  divinfo.id = "div-info"
+  shoppingList.appendChild(divtitle)
+  shoppingList.appendChild(divinfo)
+  return shoppingList;
+}
+
+function createShoppingList(element) {
+    const shoppingList = document.createElement('div')
     shoppingList.classList.add('shopping-list-item')
     shoppingList.id = "shopping-list-name-" + element.name;
     const title = document.createElement('h1')
@@ -229,8 +322,7 @@ function createShoppingList(element) {
       yesBtn.textContent = "Yes";
       yesBtn.addEventListener("click", () => {
         // Handle the removal logic, e.g., call a function to delete the item
-        removeList(url);
-        document.getElementById("shopping-list-name-" + name).remove();
+        removeList(url, name);
         modalDel.style.display = "none"; // Close the modal after handling removal
       });
 
@@ -297,8 +389,14 @@ function display_shopping_lists(data) {
 
   data.forEach(element => {
     if (!element.deleted) {
-      let shoppingList = createShoppingList(element);
-      shoppingLists.appendChild(shoppingList)
+      if (element.loaded) {
+        let shoppingList = createShoppingList(element);
+        shoppingLists.appendChild(shoppingList)
+      }
+      else {
+        let shoppingList = createNotLoadedShoppingList(element);
+        shoppingLists.appendChild(shoppingList)
+      }
     }
   });
 }
@@ -595,6 +693,8 @@ function modalShoppingList(data, listUrl) {
   let createDiv = addCreateDiv(ul, "");
   ul.appendChild(createDiv);
 
+
+
   function createAddItemModal() {
     // Create the modal element
     const modalAddItem = document.createElement("div");
@@ -802,6 +902,8 @@ function modalShoppingList(data, listUrl) {
   formInsideShoppingList.appendChild(closeButton);
   formInsideShoppingList.appendChild(checkButton);
 
+  
+
   checkButton.addEventListener("click", function () {
     allchanges = compareArrays(initialArray, updatedArray);
     console.log(allchanges);
@@ -819,11 +921,12 @@ function modalShoppingList(data, listUrl) {
     })
       .then(response => response.json())
       .then(json => {
-        if ('error' in json) {
-          console.log('Error adding the items', error);
-        } else {
+        if (json.message == "Correctly changed items") {
           initialArray = updatedArray;
-          console.log(json);
+          checkButton.hidden = true;
+          createSuccessPopup("Successfully changed the list!");
+        } else {
+          createErrorPopup("Couldn't change the list!");
         }
       })
       .catch(error => console.log(error));
