@@ -12,6 +12,14 @@ module.exports = class AWORSet {
         this.cc = [];  // [(cc)] = [(id, version)]
     }
 
+    delete() {
+        this.deleted = true;
+        this.owner = null;
+        this.name = null;
+        this.set = [];
+        this.cc = [];
+    }
+
     utag() {
         const indexes = this.cc
             .filter(entry => entry[0] === this.owner && typeof entry[1] === 'number')
@@ -149,6 +157,12 @@ module.exports = class AWORSet {
     }
 
     merge(AWORSet) {
+
+        if (!this.loaded && AWORSet.loaded) {
+            this.name = AWORSet.name;
+            this.owner = AWORSet.owner;
+            this.loaded = true;
+        }
 
         const newSet = [];
 
