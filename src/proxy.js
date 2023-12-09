@@ -38,6 +38,10 @@ if (cluster.isMaster) {
         "PORT": config.servers[i]
     });
 
+    cluster.on('death', function(worker) {
+        console.log('worker ' + worker.pid + ' died');
+    });
+
     run()
 } else {
     startServer(process.env.PORT)

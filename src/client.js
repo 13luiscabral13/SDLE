@@ -61,21 +61,21 @@ if (isMainThread) {
   let cart = new Cart(port);
   cart.load(db);
 
-  let mergeLock = false;
-  async function withMergeLock(callback) {
-    while (mergeLock) {
+  let lock = false;
+  async function withLock(callback) {
+    while (lock) {
       // Wait until the lock is released
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   
-    mergeLock = true;
+    lock = true;
   
     try {
       // Perform the critical section
       await callback();
     } finally {
       // Release the lock
-      mergeLock = false;
+      lock = false;
     }
   }
 
@@ -101,7 +101,7 @@ if (isMainThread) {
     let response;
     if (cart.getList(url).owner == port) {
       try {
-        await withMergeLock(async () => {
+        await withLock(async () => {
           response = cart.deleteList(url)
         });
       } catch (error) {
@@ -120,7 +120,7 @@ if (isMainThread) {
     const name = req.body.name;
     let list = null
     try {
-      await withMergeLock(async () => {
+      await withLock(async () => {
         list = cart.createList(name);
       });
     } catch (error) {
@@ -133,7 +133,7 @@ if (isMainThread) {
   app.post('/joinList', async (req, res) => { // join a list with that url
     let listaUrl = req.body.listUrl;
     try {
-      await withMergeLock(async () => {
+      await withLock(async () => {
         cart.createList("Waiting for load...", listaUrl, 'unknown', false);
       });
     } catch (error) {
@@ -151,7 +151,7 @@ if (isMainThread) {
     let removedChanges = items[1];
     let updatedChanges = items[2];
     try {
-      await withMergeLock(async () => {
+      await withLock(async () => {
         for (var key in addedChanges) {
           let itemToAdd = addedChanges[key];
           cart.createItem(listUrl, itemToAdd['name']);
@@ -177,7 +177,7 @@ if (isMainThread) {
     console.log(`Web interface is running on http://localhost:${port}`);
   });
 
-  const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: {port: port}});
+  const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: { dbFile: `../database/local/${port}.db` }});
   setInterval(check_cart_isChanged, 5000)
 
   function check_cart_isChanged() {
@@ -194,7 +194,7 @@ if (isMainThread) {
       cloudThread.postMessage({ type: 'updateCart', cart: cart.toString() });
     } else if(message.type === 'responseFromServer') {
       try {
-        await withMergeLock(async () => {
+        await withLock(async () => {
           cart.merge(message.cart);
         });
       } catch (error) {
