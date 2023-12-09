@@ -2,7 +2,8 @@ const GCounter = require('./GCounter.js');
 
 module.exports = class AWORSet {
 
-    constructor(owner, name, url, loaded = true) {
+    constructor(owner, id, name, url, loaded = true) {
+        this.id = id;
         this.deleted = false;
         this.loaded = loaded;
         this.owner = owner;
@@ -22,10 +23,10 @@ module.exports = class AWORSet {
 
     utag() {
         const indexes = this.cc
-            .filter(entry => entry[0] === this.owner && typeof entry[1] === 'number')
+            .filter(entry => entry[0] === this.id && typeof entry[1] === 'number')
             .map(entry => entry[1]);
         const index = indexes.length ? Math.max(...indexes) : 0;
-        return [this.owner, index + 1];
+        return [this.id, index + 1];
     }
 
     createItem(itemName, current = 0, total = 0) {
@@ -60,7 +61,8 @@ module.exports = class AWORSet {
     }
 
     elements() {
-        return this.set.map((node) => node[0]);
+        const uniqueSet = new Set(this.set.map((node) => node[0]));
+        return Array.from(uniqueSet);
     }
 
     itemInfo(itemName) {
@@ -114,7 +116,7 @@ module.exports = class AWORSet {
 
     info() {
 
-        const items = Array.from(this.set).map(([itemName, c, cc]) => {
+        const items = this.elements().map((itemName) => {
                 return this.itemInfo(itemName);
             }
         )
@@ -147,7 +149,8 @@ module.exports = class AWORSet {
             for (const ccB of b) {
                 const {id: ccIdB, version: ccVersionB} = ccB;
 
-                if (ccIdA === ccIdA && ccVersionA === ccVersionB) {
+
+                if (ccIdA === ccIdB && ccVersionA === ccVersionB) {
                     found = true;
                 }
             }
@@ -155,9 +158,12 @@ module.exports = class AWORSet {
             if (!found) result.push(elementA);
         }
 
-        return result.map((element) => {
+
+        result =  result.map((element) => {
             return [element.name, new GCounter(element.current, element.total), [element.id, element.version]];
         })
+
+        return result;
     }
 
     merge(AWORSet) {
@@ -168,7 +174,7 @@ module.exports = class AWORSet {
             this.loaded = true;
         }
 
-        const newSet = [];
+        let newSet = [];
 
         // this.set INTERSECT AWORSet.set
         for (const elementA of this.set) {
@@ -197,8 +203,7 @@ module.exports = class AWORSet {
         newSet.push(...this.preserve(AWORSet.set, this.toString().cc))
 
         // update internal set
-        this.set =  Array.from(new Set([...newSet]
-                         .map(JSON.stringify)), JSON.parse);;
+        this.set = newSet
 
         // this.causalContext UNION AWORSet.causalContext
         const externalCC = AWORSet.cc.map((cc) => [cc.id, cc.version]);

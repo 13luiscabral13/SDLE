@@ -60,7 +60,7 @@ module.exports = class Cart {
         this.hasChange = true;
         const id = url ?? uuidv4();
         const own = owner ?? this.owner;
-        let list = new AWORSet(own, name, id, loaded);
+        let list = new AWORSet(own, this.owner, name, id, loaded);
         this.lists.set(id, list);
         return id;
     }
