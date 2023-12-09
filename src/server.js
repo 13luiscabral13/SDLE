@@ -6,9 +6,9 @@ const Cart = require('./crdt/Cart.js');
 const { Worker } = require('worker_threads');
 
 const port = process.argv[2];
-  
+
 if (!port) {
-  console.log('Please provide a <PORT> on the command \x1b[3mnode client.js <PORT>\x1b[0m. (Example: node client.js 5500)');
+  console.log('Please provide a <PORT> on the command \x1b[3mnode server.js <PORT>\x1b[0m. (Example: node server.js 5500)');
   process.exit(1); // Exit the script
 }
 
@@ -61,6 +61,8 @@ async function client_requests() {
 client_requests()
 
 // Worker thread responsável por enviar updates aos vizinhos e receber updates vindos dos outros servers
+console.log("Sending port", port);
+
 const updateWorker = new Worker('./workers/servers_thread.js', { workerData: { port } });
 
 updateWorker.on('message', (message) => {
