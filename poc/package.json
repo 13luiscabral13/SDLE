@@ -1,9 +1,0 @@
-{
-    "dependencies": {
-        "flatted": "^3.2.9",
-        "sqlite3": "^5.1.6",
-        "uuid": "^9.0.1",
-        "serialize-javascript": "^6.0.1"
-    },
-    "type": "module"
-}
