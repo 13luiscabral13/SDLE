@@ -28,10 +28,10 @@ module.exports = class AWORSet {
         return [this.owner, index + 1];
     }
 
-    createItem(itemName) {
+    createItem(itemName, current = 0, total = 0) {
         if (!this.elements().includes(itemName)) {
             const tag = this.utag();
-            this.set.push([itemName, new GCounter(), tag]);
+            this.set.push([itemName, new GCounter(current, total), tag]);
             this.cc.push(tag);
             return "Item successfully added";
         }
@@ -46,9 +46,12 @@ module.exports = class AWORSet {
 
     updateQuantities(itemName, current, total) {
         if (this.elements().includes(itemName)) {
-            for (const [element, gcounter, causalContext] of this.set) {
-                if (element === itemName) {
-                    gcounter.merge({current: current, total: total});
+            for (let item of this.set) {
+                if (item[0] === itemName) {
+                    item[1].merge({current: current, total: total});
+                    const newTag = this.utag()
+                    item[2] = newTag;
+                    this.cc.push(newTag)
                     return "Successfully updated";
                 }
             }
@@ -134,7 +137,8 @@ module.exports = class AWORSet {
         for (const elementA of a) {
             const {
                 name: nameA, 
-                counter: gcounterA, 
+                current: currentA,
+                total: totalA,
                 id: ccIdA, 
                 version: ccVersionA
             } = elementA;
@@ -173,9 +177,10 @@ module.exports = class AWORSet {
             for (const elementB of AWORSet.set) {
                 const {
                     name: nameB, 
-                    counter: gcounterB, 
-                    id: ccIdB, version: 
-                    ccVersionB
+                    current: currentB, 
+                    total: totalB,
+                    id: ccIdB, 
+                    version: ccVersionB
                 } = elementB;
     
                 if (nameA === nameB && ccIdA === ccIdB && ccVersionA === ccVersionB) {

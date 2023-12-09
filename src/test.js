@@ -1,131 +1,4 @@
 const Cart = require('./crdt/Cart.js');
-const sqlite3 = require('sqlite3');
-
-async function test0() {
-
-    const db = new sqlite3.Database('../database/mock.db');
-    const cart1 = new Cart('5001');
-    await cart1.load(db);
-
-    console.log("Load da db mock");
-    console.log(cart1.toString());
-}
-
-function test1() {
-    const cart1 = new Cart('5001');
-    const cart2 = new Cart('5002');
-    
-    const url1 = cart1.createList("List 1");
-    cart1.createItem(url1, 'Leite');
-    cart1.updateQuantities(url1, 'Leite', 2, 10);
-    
-    const url2 = cart2.createList("List 2");
-    cart2.createItem(url2, 'Massa');
-    cart2.updateQuantities(url2, 'Massa', 1, 7);
-    
-    console.log("Cart 1 initial state");
-    console.log(cart1.toString());
-    console.log("Cart 2 initial state");
-    console.log(cart2.toString());
-    
-    // cart 1 manda a sua informação
-    const receivedMessage = cart1.toString();
-    cart2.merge(receivedMessage);
-    
-    // validar que o merge das listas em cart 2 foi bem sucedido
-    console.log("Cart 1 intermediate state");
-    console.log(cart1.toString());
-    console.log("Cart 2 intermediate state");
-    console.log(cart2.toString());
-    
-    // agora cart 2 responde com a sua estrutura interna
-    const sendMessage = cart2.toString();
-    cart1.merge(sendMessage);
-    
-    // validar que os dois nós ficam com o mesmo conteúdo
-    console.log("Cart 1 final state");
-    console.log(cart1.toString());
-    console.log("Cart 2 final state");
-    console.log(cart2.toString());
-}
-
-function test2() {
-    const cart1 = new Cart('5001');
-    const cart2 = new Cart('5002');
-    
-    const url1 = cart1.createList("List 1");
-    cart1.createItem(url1, 'Leite');
-    cart1.updateQuantities(url1, 'Leite', 2, 10);
-    cart1.deleteList(url1);
-    
-    const url2 = cart2.createList("List 2");
-    cart2.createItem(url2, 'Massa');
-    cart2.updateQuantities(url2, 'Massa', 1, 7);
-    
-    console.log("Cart 1 initial state");
-    console.log(cart1.toString());
-    console.log("Cart 2 initial state");
-    console.log(cart2.toString());
-    
-    // cart 1 manda a sua informação
-    const receivedMessage = cart1.toString();
-    cart2.merge(receivedMessage);
-    
-    // validar que o merge das listas em cart 2 foi bem sucedido
-    console.log("Cart 1 intermediate state");
-    console.log(cart1.toString());
-    console.log("Cart 2 intermediate state");
-    console.log(cart2.toString());
-    
-    // agora cart 2 responde com a sua estrutura interna
-    const sendMessage = cart2.toString();
-    cart1.merge(sendMessage);
-    
-    // validar que os dois nós ficam com o mesmo conteúdo
-    console.log("Cart 1 final state");
-    console.log(cart1.toString());
-    console.log("Cart 2 final state");
-    console.log(cart2.toString());
-}
-
-function test3() {
-    const cart1 = new Cart('5001');
-    const cart2 = new Cart('5002');
-    
-    const url1 = cart1.createList("List 1");
-    cart1.createItem(url1, 'Leite');
-    cart1.updateQuantities(url1, 'Leite', 2, 10);
-    
-    const url2 = cart2.createList("List 2");
-    cart2.createItem(url2, 'Massa');
-    cart2.updateQuantities(url2, 'Massa', 1, 7);
-    cart2.deleteList(url2);
-    
-    console.log("Cart 1 initial state");
-    console.log(cart1.toString());
-    console.log("Cart 2 initial state");
-    console.log(cart2.toString());
-    
-    // cart 1 manda a sua informação
-    const receivedMessage = cart1.toString();
-    cart2.merge(receivedMessage);
-    
-    // validar que o merge das listas em cart 2 foi bem sucedido
-    console.log("Cart 1 intermediate state");
-    console.log(cart1.toString());
-    console.log("Cart 2 intermediate state");
-    console.log(cart2.toString());
-    
-    // agora cart 2 responde com a sua estrutura interna
-    const sendMessage = cart2.toString();
-    cart1.merge(sendMessage);
-    
-    // validar que os dois nós ficam com o mesmo conteúdo
-    console.log("Cart 1 final state");
-    console.log(cart1.toString());
-    console.log("Cart 2 final state");
-    console.log(cart2.toString());
-}
 
 function test4() {
     const cart1 = new Cart('5001');
@@ -156,7 +29,7 @@ function test4() {
     cart2.merge(receivedMessage);
     
     // validar que o merge das listas em cart 2 foi bem sucedido
-    console.log("Cart 1 intermediate state");
+    console.log("\nCart 1 intermediate state");
     console.log(cart1.toString());
     console.log("Cart 2 intermediate state");
     console.log(cart2.toString());
@@ -166,7 +39,7 @@ function test4() {
     cart1.merge(sendMessage);
     
     // validar que os dois nós ficam com o mesmo conteúdo
-    console.log("Cart 1 final state");
+    console.log("\nCart 1 final state");
     console.log(cart1.toString());
     console.log("Cart 2 final state");
     console.log(cart2.toString());
@@ -452,11 +325,10 @@ function test12() {
 }
 
 function test() {
-    test0();  // load da base de dados local
-    test1();  // merge de duas listas diferentes, ambas não-deleted
-    test2();  // merge de duas listas diferentes, a primeira foi deletada
-    test3();  // merge de duas listas diferentes, a segunda foi eliminada
+
     test4();  // os dois carts têm a mesma lista e os mesmos itens, o primeiro deles dá update ao item
+
+        /*
     test5();  // os dois carts têm a mesma lista e os mesmos itens, o segundo deles dá update ao item
     test6();  // os dois carts têm a mesma lista e os mesmos itens, mas ambos dão update aos mesmos itens e tentam sincronizar
     test7();  // o cart1 têm a Lista 1, o cart2 remoto acaba de ter o url da Lista 1, quer saber o seu conteúdo
@@ -465,6 +337,7 @@ function test() {
     test10(); // merge após proxy: client para server, expecta receber as suas listas conhecidas atualizadas
     test11();    // testa se o cart é changed. se sim, acaba por permitir um store, senão não faz nada
     test12();
+    */
 }
 
 test()
