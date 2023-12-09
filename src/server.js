@@ -30,12 +30,36 @@ async function startServer(port) {
     let cart = new Cart(port);
     cart.load(db)
 
+    let mergeLock = false;
+    async function withMergeLock(callback) {
+        while (mergeLock) {
+        // Wait until the lock is released
+        await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    
+        mergeLock = true;
+    
+        try {
+        // Perform the critical section
+        await callback();
+        } finally {
+        // Release the lock
+        mergeLock = false;
+        }
+    }
+
     // Worker thread responsável por enviar updates aos vizinhos e receber updates vindos dos outros servers
     const updateWorker = new Worker('./workers/servers_thread.js', { workerData: { httpPort: port } });
 
-    updateWorker.on('message', (message) => {
+    updateWorker.on('message', async (message) => {
         if(message.type === 'updateCart') {
-            cart.merge(message.cart);
+            try {
+                await withMergeLock(async () => {
+                  cart.merge(message.cart);
+                });
+            } catch (error) {
+                console.error(error);
+            }
         }
     })
 
@@ -54,7 +78,14 @@ async function startServer(port) {
     for await (const [delimiter, id, response] of sock) {
         console.log(port + " received a message related to:", id.toString(), "containing message:", response.toString())
         
-        const reply = cart.merge(response, true)
+        let reply
+        try {
+            await withMergeLock(async () => {
+              reply = cart.merge(response, true);
+            });
+        } catch (error) {
+            console.error(error);
+        }
         console.log(cart.info())
     
         await sock.send(["", id, reply])

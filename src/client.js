@@ -96,11 +96,17 @@ if (isMainThread) {
     res.status(200).send(list);
   });
 
-  app.post('/deleteList', (req, res) => { // delete the list with that url
+  app.post('/deleteList', async (req, res) => { // delete the list with that url
     const url = req.body.url;
     let response;
     if (cart.getList(url).owner == port) {
-      response = cart.deleteList(url)
+      try {
+        await withMergeLock(async () => {
+          response = cart.deleteList(url)
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
     else {
       response = "You are not the owner of this list";
@@ -110,40 +116,59 @@ if (isMainThread) {
   });
 
   // POST Requests
-  app.post('/createList', (req, res) => { // create a new shopping list
+  app.post('/createList', async (req, res) => { // create a new shopping list
     const name = req.body.name;
-    let list =  cart.createList(name);
+    let list = null
+    try {
+      await withMergeLock(async () => {
+        list = cart.createList(name);
+      });
+    } catch (error) {
+      console.error(error);
+    }
     console.log(list);
     res.status(200).send(json = {message: `Created the List`, url: list})
   });
 
-  app.post('/joinList', (req, res) => { // join a list with that url
+  app.post('/joinList', async (req, res) => { // join a list with that url
     let listaUrl = req.body.listUrl;
-    cart.createList("Waiting for load...", listaUrl, 'unknown', false);
+    try {
+      await withMergeLock(async () => {
+        cart.createList("Waiting for load...", listaUrl, 'unknown', false);
+      });
+    } catch (error) {
+      console.error(error);
+    }
     let createdList = cart.getList(listaUrl);
     console.log("Cart Info ", cart.info());
     res.status(200).send(json = {message: `Joined the List`, url: listaUrl, list: createdList});
   });
 
-  app.post('/changeItems', (req, res) => {
+  app.post('/changeItems', async (req, res) => {
     const items = req.body.changes;
     const listUrl = req.body.listUrl;
     let addedChanges = items[0];
     let removedChanges = items[1];
     let updatedChanges = items[2];
-    for (var key in addedChanges) {
-      let itemToAdd = addedChanges[key];
-      cart.createItem(listUrl, itemToAdd['name']);
-      cart.updateQuantities(listUrl, itemToAdd['name'], 0, itemToAdd['total'])
-    }
-    for (var key in removedChanges) {
-      let itemToRemove = removedChanges[key];
-      cart.deleteItem(listUrl, itemToRemove['name']);
-    }
-    for (var key in updatedChanges) {
-      let itemToUpdate = updatedChanges[key];
-      cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['total']);
-    }
+    try {
+      await withMergeLock(async () => {
+        for (var key in addedChanges) {
+          let itemToAdd = addedChanges[key];
+          cart.createItem(listUrl, itemToAdd['name']);
+          cart.updateQuantities(listUrl, itemToAdd['name'], 0, itemToAdd['total'])
+        }
+        for (var key in removedChanges) {
+          let itemToRemove = removedChanges[key];
+          cart.deleteItem(listUrl, itemToRemove['name']);
+        }
+        for (var key in updatedChanges) {
+          let itemToUpdate = updatedChanges[key];
+          cart.updateQuantities(listUrl, itemToUpdate['name'], itemToUpdate['current'], itemToUpdate['total']);
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    } 
     console.log(cart.getList(listUrl));
     res.status(200).json({message: `Correctly changed items`});
   });
