@@ -2,7 +2,7 @@ class Test {
 
     constructor(id) {
         this.id = id;
-        this.set = []; // (element, cc)
+        this.set = []; // (element, quantity, cc)
         this.cc = [];  // (cc) = (id, version)
     }
 
@@ -14,10 +14,16 @@ class Test {
         return [this.id, index + 1];
     }
 
-    add(element) {
+    add(element, current = 0, total = 0) {
         const d = this.next(this.cc);
-        this.set.push([element, d]);
+        this.set.push([element, [current, total], d]);
         this.cc.push(d);
+    }
+
+    update(element, current, total) {
+        if (this.elements().includes(element)) {
+            this.add(element, current, total);
+        }
     }
 
     remove(element) {
@@ -41,14 +47,14 @@ class Test {
     show(message) {
         console.log(message)
         this.showElements();
-        // this.showCC();
+        this.showCC();
     }
 
     f(a, b) {
 
         let result = []
         for (const elementA of a) {
-            const [xA, [wA, rA]] = elementA;
+            const [xA, _, [wA, rA]] = elementA;
             let found = false;
 
             for (const elementB of b) {
@@ -71,10 +77,10 @@ class Test {
 
         // set interseção set'
         for (const elementA of this.set) {
-            const [xA, [wA, rA]] = elementA;
+            const [xA, _, [wA, rA]] = elementA;
     
             for (const elementB of test.set) {
-                const [xB, [wB, rB]] = elementB;
+                const [xB, _, [wB, rB]] = elementB;
     
                 if (xA === xB && wA === wB && rA === rB) {
                     result.push(elementA);
@@ -85,7 +91,6 @@ class Test {
 
         // set interseção cc'
         result.push(...this.f(this.set, test.cc))
-
 
         // set' interseção cc
         result.push(...this.f(test.set, this.cc))
@@ -144,4 +149,26 @@ test1.merge(test2);
 test2.merge(test1);
 
 test1.show("B removeu banana e adicionou morango. A também adicionou morango");
-test2.show("Estado de A")
+
+console.log("------------------------------");
+test1.update("morango", 4, 10);
+test1.show("atualização 4-10 de morango");
+
+test1.merge(test2);
+test2.merge(test1);
+
+test1.update("morango", 8, 10);
+test2.remove("morango")
+
+test2.merge(test1);
+test1.merge(test2);
+
+test1.show("coisas de A");
+test2.show("coisas de B");
+
+test2.remove("morango")
+test2.merge(test1);
+test1.merge(test2);
+
+test1.show("coisas de A");
+test2.show("coisas de B");
