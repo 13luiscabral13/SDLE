@@ -17,7 +17,7 @@
     - ``npm run cloud`` (this command will start the Proxy and a static number of Servers described in [config file](./src/config.json))
 - Run Client
     - ``cd src``
-    - ``npm run start-client PORT`` - (e.g. npm run client 5500)
+    - ``npm run client PORT`` - (e.g. npm run client 5500)
         - SERVER PORTS ARE STATIC! DO NOT USE THEM! (check [config file](./src/config.json))
 - Simulate Server disconnection
     - ``kill pid`` (pid is defined for each server when you start the cloud, check the console)
