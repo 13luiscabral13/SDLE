@@ -27,8 +27,10 @@ cancelBtn.addEventListener('click', () => {
 });
 
 
+
+
+
 function joinList() {
-  console.log("Entered join list");
   const listUrl = document.getElementById('join-list-name').value;
   const jsonToSend = {
     listUrl: listUrl
@@ -44,7 +46,7 @@ function joinList() {
     .then(json => {
       if (json.message == "Joined the List") {
         createErrorPopup("Trying to join the Shopping List...");
-        let myElm = {name: json.list.name, url: json.url};
+        let myElm = { name: json.list.name, url: json.url };
         shoppingLists.append(createNotLoadedShoppingList());
 
       } else {
@@ -52,8 +54,8 @@ function joinList() {
       }
     })
     .catch(error => console.log(error));
-    modal_join.hidden = true;
-  }
+  modal_join.hidden = true;
+}
 
 
 // ------------------- Adding a Shopping List -------------------
@@ -184,7 +186,7 @@ function createList(titleText) {
     .then(json => {
       if (json.message == "Created the List") {
         console.log('Successfully created ' + titleText + '!');
-        let myElm = {name: titleText, url: json.url};
+        let myElm = { name: titleText, url: json.url };
         shoppingLists.append(createShoppingList(myElm));
       } else {
         createErrorPopup("Couldn't create " + titleText + "!");
@@ -209,7 +211,7 @@ function removeList(url_to_delete, name) {
     .then(response => response.json())
     .then(json => {
       if (json.message == "You are not the owner of this list") {
-        createErrorPopup("You are not the owner of list " + name + "!" );
+        createErrorPopup("You are not the owner of list " + name + "!");
       }
       else {
         createSuccessPopup("Successfully deleted " + name + "!");
@@ -236,7 +238,13 @@ function getShoppingLists() {
     });
 }
 
-function getOneList(listUrl, reload) {
+
+function getOneList(listUrl) {
+  console.log("Calling getOneList with argument: ", listUrl);
+  const checkButton = document.getElementById("saveChanges");
+  if (checkButton != null) {
+    checkButton.hidden = true;
+  }
   fetch(url + '/lists/' + listUrl, {
     method: 'GET',
     headers: {
@@ -245,29 +253,143 @@ function getOneList(listUrl, reload) {
   })
     .then(response => response.json())
     .then(data => {
-      if (!reload) {
-        let initialArray = JSON.parse(JSON.stringify(data.items));
-        var updatedArray = JSON.parse(JSON.stringify(data.items));      
-        modalShoppingList(data, listUrl, initialArray, updatedArray);
+      console.log("Data: ", data);
+      initialArray = JSON.parse(JSON.stringify(data.items));
+      updatedArray = JSON.parse(JSON.stringify(data.items));
+      let checkButton = document.getElementById("check-button");
+      if (checkButton != null) {
+        checkButton.remove();
       }
-      else {
-        let initialArray = JSON.parse(JSON.stringify(data.items));
-        let updatedArray = JSON.parse(JSON.stringify(data.items));
-        let checkButton = document.getElementById("check-button");
-        if (checkButton != null) {
-          checkButton.remove();
-        }
-        let modalAdd = document.getElementById("modalAddItem");
-        if (modalAdd != null) {
-          modalAdd.remove();
-        }
-        reloadList(data, initialArray, updatedArray)
+      let modalAdd = document.getElementById("modalAddItem");
+      if (modalAdd != null) {
+        modalAdd.remove();
       }
+      modalShoppingList(data, listUrl, initialArray, updatedArray);
     })
     .catch(error => {
       console.error(error);
     });
 }
+
+
+function modalShoppingList(data, listUrl, initialArray, updatedArray) {
+
+  const shopList = document.getElementById("thisShoppingList");
+  shopList.setAttribute("data-url", listUrl);
+  buildUL(data, updatedArray, initialArray);
+
+  const closeButton = createButtonWithIcon("fas fa-times");
+  closeButton.style.position = "absolute";
+  closeButton.style.top = "10px";
+  closeButton.style.right = "10px";
+  closeButton.style.cursor = "pointer";
+
+  const checkButton = createButtonWithIcon("fas fa-check");
+  checkButton.id = "saveChanges";
+  checkButton.style.width = "60px";
+  checkButton.style.height = "30px";
+  checkButton.style.position = "absolute";
+  checkButton.style.bottom = "10px";
+  checkButton.style.right = "10px";
+  checkButton.style.cursor = "pointer";
+  checkButton.hidden = true;
+  
+  function closeList(shopList, checkButton) {
+    shopList.hidden = true;
+    checkButton.hidden = true;
+  }
+  // Add an event listener to hide the modal when the close button is clicked
+  closeButton.addEventListener("click", function () {
+    updatedArray = initialArray;
+    closeList(shopList, checkButton);
+    reloading = false;
+    return;
+  });
+
+  // Access the form inside the element
+  var formInsideShoppingList = shopList.querySelector("form");
+
+  // Append the close button and check button to the modal
+  formInsideShoppingList.appendChild(closeButton);
+  formInsideShoppingList.appendChild(checkButton);
+
+  checkButton.addEventListener("click", function () {
+    console.log("On check click Initial Array was: ", initialArray, " and updatedArray was: ",  updatedArray);
+    changeItems(shopList, checkButton);
+    closeList(shopList, checkButton);
+  });
+  shopList.hidden = false;
+}
+
+
+function buildUL(iniData, updatedArray, initialArray) {
+  console.log("Calling buildUL with arguments: ", updatedArray, initialArray)
+  const { items: dataItems, listName: dataName } = iniData;
+  const ul = document.getElementById("this-list-items");
+  ul.innerHTML = ""; // Remove all items inside the UL
+  ul.style.height = "90%";
+  ul.style.overflowY = "scroll";
+  index = -1;
+  dataItems.forEach(itemData => {
+    index = index + 1;
+    const itemDiv = createThisItem(itemData, initialArray, updatedArray, initialArray);
+    ul.appendChild(itemDiv);
+  });
+  let createDiv = addCreateDiv(ul, "", dataName, updatedArray, initialArray);
+  ul.appendChild(createDiv);
+}
+function changeItems(shopList, checkButton) {
+  console.log("Calling changeItems: ", initialArray, updatedArray);
+  allchanges = compareArrays(initialArray, updatedArray);
+  console.log(allchanges);
+  const urlShop = shopList.getAttribute("data-url");
+  const jsonToSend = {
+    changes: allchanges,
+    listUrl: urlShop
+  };
+
+  fetch(url + '/changeItems', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(jsonToSend)
+  })
+    .then(response => response.json())
+    .then(json => {
+      if (json.message == "Correctly changed items") {
+        checkButton.hidden = true;
+        createSuccessPopup("Successfully changed the list!");
+      } else {
+        createErrorPopup("Couldn't change the list!");
+      }
+    })
+    .catch(error => console.log(error));
+}
+
+
+
+function checkForChanges(initialArray, updatedArray) {
+  // Helper function to sort arrays of objects by their string representation
+  const sortArray = (arr) => arr.slice().sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+
+  const sortedInitialArray = sortArray(initialArray);
+  const sortedUpdatedArray = sortArray(updatedArray);
+
+  if (JSON.stringify(sortedInitialArray) === JSON.stringify(sortedUpdatedArray)) {
+    console.log("Can't find changes");
+    console.log("Initial: ", initialArray);
+    console.log("Updated: ", updatedArray);
+    document.getElementById("saveChanges").hidden = true;
+  } else {
+    console.log("Found Changes!");
+    console.log("Initial: ", initialArray);
+    console.log("Updated: ", updatedArray);
+    document.getElementById("saveChanges").hidden = false;
+  }
+}
+
+
 
 function createNotLoadedShoppingList() {
   const shoppingList = document.createElement('div')
@@ -284,130 +406,130 @@ function createNotLoadedShoppingList() {
   shoppingList.appendChild(divinfo)
   return shoppingList;
 }
-
 function createShoppingList(element, owner) {
-    const shoppingList = document.createElement('div')
-    shoppingList.classList.add('shopping-list-item')
-    shoppingList.id = "shopping-list-name-" + element.name;
-    const title = document.createElement('h1')
-    title.textContent = element.name
-    const divtitle = document.createElement('div')
-    divtitle.id = "div-title"
-    divtitle.append(title)
+  const shoppingList = document.createElement('div')
+  shoppingList.classList.add('shopping-list-item')
+  shoppingList.id = "shopping-list-name-" + element.name;
+  const title = document.createElement('h1')
+  title.textContent = element.name
+  const divtitle = document.createElement('div')
+  divtitle.id = "div-title"
+  divtitle.append(title)
 
-    const divinfo = document.createElement('div')
-    divinfo.id = "div-info"
-    const deleteBtn = document.createElement('button')
-    // Set the button's ID
-    deleteBtn.id = 'delete-button';
+  const divinfo = document.createElement('div')
+  divinfo.id = "div-info"
+  const deleteBtn = document.createElement('button')
+  // Set the button's ID
+  deleteBtn.id = 'delete-button';
 
-    // Create an <i> element for the trash icon
-    const deleteIcon = document.createElement('i');
-    deleteIcon.classList.add('fas', 'fa-trash'); // Add classes to the <i> element
-    if (parseInt(owner) !== port) {
-      const ownerText = document.createElement('p');
-      ownerText.textContent = `(${owner})`;
-      ownerText.style.fontSize = "12px";
-      ownerText.style.overflow = "hidden";
-      ownerText.style.margin = "0px";
-      ownerText.style.textOverflow = "ellipsis";
-      ownerText.style.whiteSpace = "nowrap";
-      divtitle.appendChild(ownerText);
-    }
+  // Create an <i> element for the trash icon
+  const deleteIcon = document.createElement('i');
+  deleteIcon.classList.add('fas', 'fa-trash'); // Add classes to the <i> element
+  if (parseInt(owner) !== port) {
+    const ownerText = document.createElement('p');
+    ownerText.textContent = `(${owner})`;
+    ownerText.style.fontSize = "12px";
+    ownerText.style.overflow = "hidden";
+    ownerText.style.margin = "0px";
+    ownerText.style.textOverflow = "ellipsis";
+    ownerText.style.whiteSpace = "nowrap";
+    divtitle.appendChild(ownerText);
+  }
 
-      // Append the <i> element to the button
-      deleteBtn.appendChild(deleteIcon);
+  // Append the <i> element to the button
+  deleteBtn.appendChild(deleteIcon);
 
-      deleteBtn.addEventListener('click', () => {
-        //alert("Are you sure you want to delete the shopping list? This will delete it for everyone associated to it!!")
-        checkremoveList(element.url, element.name);
-      })
+  deleteBtn.addEventListener('click', () => {
+    //alert("Are you sure you want to delete the shopping list? This will delete it for everyone associated to it!!")
+    checkremoveList(element.url, element.name);
+  })
 
-    function checkremoveList(url, name) {
-      if (document.getElementById("modalDel") == null) {
-      // Create modal container
-      const modalDel = document.createElement("div");
-      modalDel.classList.add("modal");
-      modalDel.id = "modalDel";
-      // Create content for the modal
-      const modalContent = document.createElement("div");
-      modalContent.classList.add("modal-content");
+  const shareBtn = document.createElement('button')
+  shareBtn.id = 'share-button'
 
-      // Create text for the modal
-      const modalText1 = document.createElement("p");
-      modalText1.style.marginTop = "0px";
-      modalText1.textContent = `Are you sure you want to remove ${name}?`;
-      const modalText2 = document.createElement("p");
-      modalText2.style.margin = "-15px";
-      modalText2.textContent = `This will delete it for everyone associated to it!!`;
-      const modalText3 = document.createElement("p");
-      modalText3.style.marginTop = "15px";
-      modalText3.style.marginBottom = "0px";
-      modalText3.style.color = "red";
-      modalText3.style.fontSize = "15px";
-      modalText3.textContent = `(This action is irreversible)`;
-      // Create "Yes" button
-      const yesBtn = document.createElement("button");
-      yesBtn.textContent = "Yes";
-      yesBtn.addEventListener("click", () => {
-        // Handle the removal logic, e.g., call a function to delete the list
-        removeList(url, name);
-        modalDel.remove();
-      });
+  const shareIcon = document.createElement('i');
+  shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
+  const divbtns = document.createElement('div');
 
-      // Create "No" button
-      const noBtn = document.createElement("button");
-      noBtn.textContent = "No";
-      noBtn.addEventListener("click", () => {
-        modalDel.remove();
-      });
+  shareBtn.addEventListener('click', () => {
+    modalWithURL(element.url, element.name);
+  })
 
-      // Append elements to the modal content
-      modalContent.appendChild(modalText1);
-      modalContent.appendChild(modalText2);
-      modalContent.appendChild(modalText3);
-      modalContent.appendChild(yesBtn);
-      modalContent.appendChild(noBtn);
-
-      // Append modal content to the modal container
-      modalDel.appendChild(modalContent);
-
-      // Append modal container to the document body
-      document.body.appendChild(modalDel);
-
-      // Display the modal
-      modalDel.style.display = "block";
-      // TODO: complete function
-    }
-    }
-
-    const shareBtn = document.createElement('button')
-    shareBtn.id = 'share-button'
-
-    const shareIcon = document.createElement('i');
-    shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
-    const divbtns = document.createElement('div');
-
-    shareBtn.addEventListener('click', () => {
-      modalWithURL(element.url, element.name);
-    })
-
-    divtitle.addEventListener('click', () => {
-      getOneList(element.url, false);
-    })
+  divtitle.addEventListener('click', () => {
+    getOneList(element.url);
+  })
 
 
-    divbtns.id = "divbtns"
-    // Append the <i> element to the button
-    shareBtn.appendChild(shareIcon);
-    divbtns.append(deleteBtn)
-    divbtns.append(shareBtn)
-    divinfo.appendChild(divbtns)
+  divbtns.id = "divbtns"
+  // Append the <i> element to the button
+  shareBtn.appendChild(shareIcon);
+  divbtns.append(deleteBtn)
+  divbtns.append(shareBtn)
+  divinfo.appendChild(divbtns)
 
-    shoppingList.appendChild(divtitle)
-    shoppingList.appendChild(divinfo)
-    return shoppingList;
+  shoppingList.appendChild(divtitle)
+  shoppingList.appendChild(divinfo)
+  return shoppingList;
 }
+
+function checkremoveList(url, name) {
+  if (document.getElementById("modalDel") == null) {
+    // Create modal container
+    const modalDel = document.createElement("div");
+    modalDel.classList.add("modal");
+    modalDel.id = "modalDel";
+    // Create content for the modal
+    const modalContent = document.createElement("div");
+    modalContent.classList.add("modal-content");
+
+    // Create text for the modal
+    const modalText1 = document.createElement("p");
+    modalText1.style.marginTop = "0px";
+    modalText1.textContent = `Are you sure you want to remove ${name}?`;
+    const modalText2 = document.createElement("p");
+    modalText2.style.margin = "-15px";
+    modalText2.textContent = `This will delete it for everyone associated to it!!`;
+    const modalText3 = document.createElement("p");
+    modalText3.style.marginTop = "15px";
+    modalText3.style.marginBottom = "0px";
+    modalText3.style.color = "red";
+    modalText3.style.fontSize = "15px";
+    modalText3.textContent = `(This action is irreversible)`;
+    // Create "Yes" button
+    const yesBtn = document.createElement("button");
+    yesBtn.textContent = "Yes";
+    yesBtn.addEventListener("click", () => {
+      // Handle the removal logic, e.g., call a function to delete the list
+      removeList(url, name);
+      modalDel.remove();
+    });
+
+    // Create "No" button
+    const noBtn = document.createElement("button");
+    noBtn.textContent = "No";
+    noBtn.addEventListener("click", () => {
+      modalDel.remove();
+    });
+
+    // Append elements to the modal content
+    modalContent.appendChild(modalText1);
+    modalContent.appendChild(modalText2);
+    modalContent.appendChild(modalText3);
+    modalContent.appendChild(yesBtn);
+    modalContent.appendChild(noBtn);
+
+    // Append modal content to the modal container
+    modalDel.appendChild(modalContent);
+
+    // Append modal container to the document body
+    document.body.appendChild(modalDel);
+
+    // Display the modal
+    modalDel.style.display = "block";
+    // TODO: complete function
+  }
+}
+
 
 function display_shopping_lists(data) {
 
@@ -429,7 +551,7 @@ function display_shopping_lists(data) {
       }
     }
   });
-} 
+}
 
 function modalWithURL(url, listName) {
   // Create the modal
@@ -492,8 +614,6 @@ function modalWithURL(url, listName) {
 
 
 function createThisItem(itemData, initialArray, updatedArray) {
-  console.log("Entered createThisItem: ", updatedArray, initialArray);
-  console.log(itemData);
   const itemDiv = document.createElement("div");
   itemDiv.style.display = "flex";
   itemDiv.style.justifyContent = "space-between";
@@ -703,24 +823,8 @@ function createThisItem(itemData, initialArray, updatedArray) {
   return itemDiv;
 }
 
-function reloadList(iniData, updatedArray, initialArray) {
-  console.log("Entered reloadList: ", updatedArray, initialArray);
-  const { items: dataItems, listName: dataName } = iniData;
-  const ul = document.getElementById("this-list-items");
-  ul.innerHTML = ""; // Remove all items inside the UL
-  ul.style.height = "90%";
-  ul.style.overflowY = "scroll";
-  index = -1;
-  dataItems.forEach(itemData => {
-    index = index + 1;
-    const itemDiv = createThisItem(itemData, initialArray, updatedArray, initialArray);
-    ul.appendChild(itemDiv);
-  });
-  let createDiv = addCreateDiv(ul, "", dataName, updatedArray, initialArray);
-  ul.appendChild(createDiv);
-}
+
 function addCreateDiv(ul, createDiv, dataName, updatedArray, initialArray) {
-  console.log("Entered addCreateDiv: ", updatedArray, initialArray);
   if (createDiv != "") {
     createDiv.remove();
   }
@@ -892,132 +996,6 @@ function createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv)
   // Initial check
   handleMediaQueryChange(mediaQuery);
 }
-function addToArray(newItem, updatedArray, initialArray) {
-  updatedArray[updatedArray.length] = newItem;
-  checkForChanges(initialArray, updatedArray);
-}
-function modalShoppingList(data, listUrl, initialArray, updatedArray) {
-  setInterval(function () {
-    console.log("reloadList");
-    getOneList(listUrl, true);
-  }, 10000);
-
-  const { items: dataItems, listName: dataName } = data;
-  const shopList = document.getElementById("thisShoppingList");
-  shopList.setAttribute("data-url", listUrl);
-  const ul = document.getElementById("this-list-items");
-  const name = document.getElementById("this-list-name");
-  name.textContent = dataName;
-  name.style.paddingTop = "10px";
-  ul.innerHTML = "";
-  ul.style.height = "90%";
-  ul.style.overflowY = "scroll";
-  index = -1;
-  dataItems.forEach(itemData => {
-    index = index + 1;
-    const itemDiv = createThisItem(itemData, initialArray, updatedArray);
-    ul.appendChild(itemDiv);
-  }
-  );
-
-  let createDiv = addCreateDiv(ul, "", dataName, updatedArray, initialArray);
-  ul.appendChild(createDiv);
-  const closeButton = createButtonWithIcon("fas fa-times");
-  closeButton.style.position = "absolute";
-  closeButton.style.top = "10px";
-  closeButton.style.right = "10px";
-  closeButton.style.cursor = "pointer";
-  const checkButton = createButtonWithIcon("fas fa-check");
-  checkButton.id = "saveChanges";
-  checkButton.style.width = "60px";
-  checkButton.style.height = "30px";
-  checkButton.style.position = "absolute";
-  checkButton.style.bottom = "10px";
-  checkButton.style.right = "10px";
-  checkButton.style.cursor = "pointer";
-  checkButton.hidden = true;
-
-
-
-  // Add an event listener to hide the modal when the close button is clicked
-  closeButton.addEventListener("click", function () {
-    updatedArray = initialArray;
-    shopList.hidden = true;
-    checkButton.hidden = true;
-    return;
-  });
-
-  // Access the form inside the element
-  var formInsideShoppingList = shopList.querySelector("form");
-
-  // Append the close button to the modal
-  formInsideShoppingList.appendChild(closeButton);
-  formInsideShoppingList.appendChild(checkButton);
-
-  
-
-  checkButton.addEventListener("click", function () {
-    allchanges = compareArrays(initialArray, updatedArray);
-    console.log(allchanges);
-    const urlShop = shopList.getAttribute("data-url");
-    const jsonToSend = {
-      changes: allchanges,
-      listUrl: urlShop
-    }
-    fetch(url + '/changeItems', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(jsonToSend)
-    })
-      .then(response => response.json())
-      .then(json => {
-        if (json.message == "Correctly changed items") {
-          initialArray = updatedArray;
-          checkButton.hidden = true;
-          createSuccessPopup("Successfully changed the list!");
-        } else {
-          createErrorPopup("Couldn't change the list!");
-        }
-      })
-      .catch(error => console.log(error));
-  });
-
-  shopList.hidden = false;
-}
-
-
-
-function checkForChanges(initialArray, updatedArray) {
-  // Helper function to sort arrays of objects by their string representation
-  const sortArray = (arr) => arr.slice().sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-
-  const sortedInitialArray = sortArray(initialArray);
-  const sortedUpdatedArray = sortArray(updatedArray);
-
-  if (JSON.stringify(sortedInitialArray) === JSON.stringify(sortedUpdatedArray)) {
-    console.log("Can't find changes");
-    console.log("Initial: ", initialArray);
-    console.log("Updated: ", updatedArray);
-    document.getElementById("saveChanges").hidden = true;
-  } else {
-    console.log("Found Changes!");
-    console.log("Initial: ", initialArray);
-    console.log("Updated: ", updatedArray);
-    document.getElementById("saveChanges").hidden = false;
-  }
-}
-
-
-function createButtonWithIcon(iconClasses) {
-  const button = document.createElement("button");
-  const icon = document.createElement("i");
-  button.type = "button";
-  icon.classList.add(...iconClasses.split(" "));
-  button.appendChild(icon);
-  return button;
-}
 
 function checkIfInArray(name, array) {
   for (var key in array) {
@@ -1027,37 +1005,44 @@ function checkIfInArray(name, array) {
   }
   return -1;
 }
-
-function setDifference(setA, setB) {
-  let difference = new Set(setA);
-  setB.forEach(element => {
-    difference.delete(element);
-  });
-  return difference;
+function addToArray(newItem, updatedArray, initialArray) {
+  updatedArray[updatedArray.length] = newItem;
+  checkForChanges(initialArray, updatedArray);
 }
-
 function compareArrays(initialArray, updatedArray) {
-  let addedElements = [];
+  const addedElements = [];
   const removedElements = [];
   const updatedElements = [];
 
-  let updatedArraySet = new Set(updatedArray);
-
-  let passedUpdatedElements = new Set();
   for (var key in initialArray) {
+    initialArray[key]['passed'] = true;
     var keyUp = checkIfInArray(initialArray[key]['name'], updatedArray); // Key in updatedArray
     if (keyUp != -1) { // if in updated Array
+      updatedArray[keyUp]['passed'] = true;
       if (JSON.stringify(initialArray[key]) != JSON.stringify(updatedArray[keyUp])) { /* if different in both arrays */
         updatedElements.push(updatedArray[keyUp])
       }
-      passedUpdatedElements.add(updatedArray[keyUp]);
     }
     else { /* not in updated */
       removedElements.push(initialArray[key])
     }
   }
 
-  let addedElementsSet = setDifference(updatedArraySet, passedUpdatedElements);
-  addedElements = Array.from(addedElementsSet);
+  for (var key in updatedArray) {
+    if (updatedArray[key]['passed'] != true) {
+      addedElements.push(updatedArray[key])
+    }
+  }
+
   return ([addedElements, removedElements, updatedElements]);
+}
+
+// Helper function to create a button with an icon
+function createButtonWithIcon(iconClasses) {
+  const button = document.createElement("button");
+  const icon = document.createElement("i");
+  button.type = "button";
+  icon.classList.add(...iconClasses.split(" "));
+  button.appendChild(icon);
+  return button;
 }

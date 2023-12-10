@@ -170,7 +170,7 @@ if (isMainThread) {
       console.error(error);
     } 
     console.log(cart.getList(listUrl));
-    res.status(200).json({message: `Correctly changed items`});
+    res.status(200).json({message: `Correctly changed items`, cart: cart.info()});
   });
 
   app.listen(port, () => {
