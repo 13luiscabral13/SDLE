@@ -15,7 +15,8 @@
 - [3. Local First](#3-local-first)
 - [4. Cloud](#4-cloud)
     - [4.1 Replication between nodes](#41-replication-between-nodes)
-- [5. References](#5-references)
+- [5. User Interface](#)
+- [6. References](#5-references)
 
 --- 2
 
@@ -107,6 +108,8 @@ class GCounter {
   - it does not rely on any user input, which may not be unique throughout the system
   - is independent of timestamps, which can be desynchronized between nodes
 
+- Only the owner of the list (the node that instantiated it) can delete it, and this operation is irreversible, propagating throughout the entire system.
+
 --- 7
 
 <p align="center">
@@ -145,9 +148,9 @@ The implemented proxy server serves a critical additional function: load balanci
   <p align="center">Figure 4: Cloud Node</p>
 </p><br>
 
-- `Client request management`: recebe o estado atual do client, merge e retorna o seu sub-estado que interessa ao client;
-- `Fault tolerance`: periodically, the current state of the Cart is stored in the local database, allowing data recovery from the node in case of failure;
-- `Ring replication`: cada server pode periodicamente enviar o seu estado a outro servidor vizinho ou receber atualizações dos seus vizinhos;
+- `Client request management`: Receives the current state from the client, merges it, and returns the relevant sub-state to the client;
+- `Fault tolerance`: periodically, the current state of the Cart is stored in the local database, enabling data recovery from the node in case of failure;
+- `Ring replication`: each server can periodically send its state to another neighboring server or receive updates from its neighbors;
 
 --- 10
 
@@ -172,11 +175,32 @@ The implemented proxy server serves a critical additional function: load balanci
 
 --- 11
 
-Frontend
+## 5. User Interface
+
+### TODO
 
 --- 12
 
-## 5. References
+## 6. Improvements
+
+### Why isn't the causal context of a list also stored in the local database?
+
+We don't need. Merging causal contexts is simply a union of two sets, so if the node loses the causal context, it can easily recover it in the first interaction with the cloud.
+
+### How is the import of a list from the cloud implemented?
+
+The client simply needs to instantiate a list on their side with the imported URL. The merge between two lists is designed to not only merge the items in the list but also update their attributes (owner name, list name, deleted flag, loaded flag) that were previously unknown. In the first interaction with the cloud, all the content of the imported list becomes known.
+
+### Is the output of a server's merge always its entire state?
+
+No. For efficiency reasons, the output of the server after its internal merge is never its entire content and depends on the requesting node:
+
+- `Client-server interaction`: the client only receives the subset of the cart state that matters to it, i.e., the latest version of the lists it knows.
+- `Server-server interaction`: the other server only receives an 'ACK' to confirm receipt. At this stage, there is no need to exchange the total content of the two servers since, being arranged in a ring, they will soon receive the content from their neighbors.
+
+--- 13
+
+## 7. References
 
 - [1] - [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
 - [2] - [CRDT](https://crdt.tech/papers.html)
@@ -188,3 +212,5 @@ Frontend
 - [8] - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
 
 #### T05, SDLE 2023/24
+
+--- 14
