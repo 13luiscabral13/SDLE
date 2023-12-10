@@ -406,7 +406,12 @@ function createNotLoadedShoppingList() {
 function createShoppingList(element, owner) {
   const shoppingList = document.createElement('div')
   shoppingList.classList.add('shopping-list-item')
-  shoppingList.id = "shopping-list-name-" + element.name;
+  if (owner !== port && owner !== "(undefined)") {
+    shoppingList.id = "shopping-list-name-" + element.name + "-from-" + owner;
+  }
+  else {
+    shoppingList.id = "shopping-list-name-" + element.name;
+  }
   const numberOfItems = document.createElement('p');
   if (element.items.length == 1) {
     numberOfItems.textContent = "(" + element.items.length + " item)";
