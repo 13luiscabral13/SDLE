@@ -195,6 +195,10 @@ The client simply needs to instantiate a list on their side with the imported UR
 
 No. For efficiency reasons, the output of the server after its internal merge is never its entire content and depends on the requesting node:
 
+### In any node (client, server), is the storage to the Cart state database always performed?
+
+No. For performance reasons, storing information in the local database is only done when the Cart detects an internal change.
+
 - `Client-server interaction`: the client only receives the subset of the cart state that matters to it, i.e., the latest version of the lists it knows.
 - `Server-server interaction`: the other server only receives an 'ACK' to confirm receipt. At this stage, there is no need to exchange the total content of the two servers since, being arranged in a ring, they will soon receive the content from their neighbors.
 
