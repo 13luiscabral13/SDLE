@@ -62,10 +62,13 @@ form.addEventListener("submit", function (event) {
   event.preventDefault();
   const title = document.getElementById("create-list-name");
   const titleText = title.value
-  let shoppingLists = document.querySelectorAll('.shopping-list-item');
+  let shoppingLists = Array.from(document.querySelectorAll('.shopping-list-item'));
+  console.log(shoppingLists);
   if (shoppingLists.length != 0) {
     for (var key in shoppingLists) {
-      if (shoppingLists[key].getAttribute('id').split('shopping-list-name-')[1] == titleText) {
+      console.log(key)
+      console.log(shoppingLists[key].id);
+      if (shoppingLists[key].id.split('shopping-list-name-')[1] == titleText) {
         createErrorPopup("You can't create a list with the same name!");
         return;
       }
