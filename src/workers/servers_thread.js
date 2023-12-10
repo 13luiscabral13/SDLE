@@ -6,13 +6,14 @@ const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 let skip = 0;
 let updated = 0;
 let timedOut = false;
+let port
 
 //Enviar cart para um vizinho
 async function updateNeighboor(neighborPort, cart) {
     //Servidor atual conecta-se ao vizinho
     const requester = new zmq.Request;
     requester.connect(`tcp://localhost:${neighborPort}`);
-    //console.log(`\nSending update to server ${neighborPort}`);
+    console.log(`\n${port} Sending update to server ${neighborPort}`);
 
     // Servidor atual envia cart ao vizinho
     requester.send(cart);
@@ -28,7 +29,7 @@ async function updateNeighboor(neighborPort, cart) {
         // Espera pela resposta do servidor vizinho ou timeout
         const [response] = await Promise.race([requester.receive(), timeoutPromise]);
 
-        //console.log(`Received ACK from server ${neighborPort}`);
+        console.log(`${port} Received ACK from server ${neighborPort}`);
         updated++;
     } catch (error) {
         console.error(error.message);
@@ -41,6 +42,7 @@ async function updateNeighboor(neighborPort, cart) {
 
 //Enviar cart para todos os vizinhos
 async function updateAllNeighboors(httpPort, cart) {
+    port = httpPort
     skip = 0;
     updated = 0;
     while (updated !== config.neighbors) {
@@ -66,7 +68,7 @@ async function listeningToUpdates(httpPort) {
 
         if (messages.length > 0) {
             const [request] = messages;
-            //console.log(`\nReceived update`);
+            console.log(`\n${port} Received update`);
 
             // Worker thread avisa a main thread de que recebeu um novo update e precisa de fazer merge do cart
             parentPort.postMessage({ type: 'updateCart', cart: request.toString()});

@@ -13,6 +13,7 @@ module.exports = class AWORSet {
         this.cc = [];  // [(cc)] = [(id, version)]
     }
 
+    // When deleting, also delete all its internal structures
     delete() {
         this.deleted = true;
         this.owner = null;
@@ -21,6 +22,12 @@ module.exports = class AWORSet {
         this.cc = [];
     }
 
+    /*
+        Example of unique tag construction algorithm
+        this.id = C
+        this.cc = [(A, 1), (C, 1), (C, 2), (A, 2), (B, 1)]
+        this.utag() = (C, 3)
+    */
     utag() {
         const indexes = this.cc
             .filter(entry => entry[0] === this.id && typeof entry[1] === 'number')
@@ -29,6 +36,10 @@ module.exports = class AWORSet {
         return [this.id, index + 1];
     }
 
+    /*
+        A new item is associated with a unique tag, including its version and identification of 
+        the node responsible for the change
+    */
     createItem(itemName, current = 0, total = 0) {
         if (!this.elements().includes(itemName)) {
             const tag = this.utag();
@@ -39,12 +50,18 @@ module.exports = class AWORSet {
         return "Error: This item already exists in this list";
     }
 
+    // Deletion is simple: remove the item from this.set
     deleteItem(itemName) {
         this.set = this.set.filter((node) => {
             return node[0] !== itemName
         });
     }
 
+    /*
+        Updating quantities involves:
+        - merging the GCounters
+        - applying a new tag to the list element for versioning purposes
+    */
     updateQuantities(itemName, current, total) {
         if (this.elements().includes(itemName)) {
             for (let item of this.set) {
@@ -65,9 +82,13 @@ module.exports = class AWORSet {
         return Array.from(uniqueSet);
     }
 
+    // For object serialization purposes
     itemInfo(itemName) {
 
-        // a quantidade de um item é o merge dos GCounters de todos os elementos
+        /*
+            The quantity of an item is the merge of the GCounters 
+            from all versions of that element
+        */
         if (this.elements().includes(itemName)) {
             let counter = new GCounter();
             for (const [item, gcounter, cc] of this.set) {
@@ -84,6 +105,7 @@ module.exports = class AWORSet {
         }
     }
 
+    // For object serialization purposes
     toString() {
 
         const cc = this.cc.map(([id, version]) => {
@@ -114,9 +136,11 @@ module.exports = class AWORSet {
         };  
     }
 
+    // For frontend purposes
     info() {
 
-        const items = this.elements().map((itemName) => {
+        const items = this.elements().map(
+            (itemName) => {
                 return this.itemInfo(itemName);
             }
         )
@@ -131,8 +155,10 @@ module.exports = class AWORSet {
         };  
     }
 
-    // a -> set
-    // b -> cc
+    /*
+        Returns elements from A that do not have their causal context present
+        in set B, meaning, non-deleted elements
+    */
     preserve(a, b) {
 
         let result = []
@@ -158,7 +184,7 @@ module.exports = class AWORSet {
             if (!found) result.push(elementA);
         }
 
-
+        // Transformation of the output in a internal representation (string, GCounter, causalContext)
         result =  result.map((element) => {
             return [element.name, new GCounter(element.current, element.total), [element.id, element.version]];
         })
@@ -168,6 +194,7 @@ module.exports = class AWORSet {
 
     merge(AWORSet) {
 
+        // merge attributes if unknown or not loaded
         if (!this.loaded && AWORSet.loaded) {
             this.name = AWORSet.name;
             this.owner = AWORSet.owner;

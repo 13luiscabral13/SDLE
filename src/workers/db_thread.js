@@ -2,8 +2,7 @@ const { Worker, isMainThread, parentPort, workerData } = require('worker_threads
 const sqlite3 = require('sqlite3').verbose();
 
 if (!isMainThread) {
-  const { port } = workerData;
-  const dbFile = `../database/local/${port}.db`;
+  const { dbFile } = workerData;
   let db = new sqlite3.Database(dbFile);
 
   function updateDB(cartLists) {
