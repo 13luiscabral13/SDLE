@@ -5,7 +5,7 @@ html {
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    background: rgb(202, 202, 202);
+    background: rgb(232, 227, 217);
     margin: 0;
     padding: 0;
 }
@@ -23,6 +23,21 @@ header {
     justify-content: space-between;
 }
 
+header button:hover {
+    background-color: #fff4c7;
+}
+
+#header-logo {
+    max-height: 45px;
+    margin-right: 15px;
+}
+
+header #elements {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .horizontal-line {
     width: 100%; /* Fills the entire width of the screen */
     height: 2px;  /* You can adjust the height as needed */
@@ -33,6 +48,7 @@ header {
 #shopping-list-header {
     text-align: center;
     margin-top: 10px;
+    font-weight: normal;
 }
 
 .shopping-lists {
@@ -42,13 +58,14 @@ header {
     flex-wrap: wrap;
 }
 
+
 .shopping-list-item {
     width: 300px;
     height: fit-content;
     padding-bottom: 30px;
     margin: 20px;
     color: #333;
-    background-color: none;
+    background-color:none;
     display: block;
     flex-direction: column;
     justify-content: center;
