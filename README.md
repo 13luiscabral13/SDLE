@@ -2,11 +2,14 @@
 
 ## Documentation
 
-- [Design](/docs/Report.md)
+- [Architecture](./docs/Architecture.pdf)
 - [Code](/src/)
 - [Database](./database/)
+- [Presentation](./docs/Presentation.pdf)
+- [Demonstration](./docs/Demo.mp4)
 
 ## How to Run:
+
 - This will install all the dependencies listed in package.json.
     - ``npm install``
 - Run Proxy & Servers
