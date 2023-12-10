@@ -5,6 +5,7 @@ module.exports = class GCounter {
         this.total = total;
     }
 
+    // For object serialization purposes
     info() {
         return {
             current: this.current,
@@ -12,6 +13,7 @@ module.exports = class GCounter {
         };
     }
 
+    // The merge is simply the maximum of the two counters
     merge(GCounter) {
         this.current = Math.max(this.current, GCounter.current);
         this.total = Math.max(this.total, GCounter.total);

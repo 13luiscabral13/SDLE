@@ -80,7 +80,7 @@ async function listeningToUpdates(httpPort) {
 
 if (!isMainThread) {
     let { httpPort } = workerData;
-
+    console.log(httpPort);
     // Worker thread está atenta a updates mandados por outros servers
     listeningToUpdates(httpPort);
 

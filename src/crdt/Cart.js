@@ -153,24 +153,25 @@ module.exports = class Cart {
         for (const receivedList of cart) {
             let list = this.lists.get(receivedList.url);
 
-            // Crio a lista do meu lado
+            // Creates a new list
             if (!list) {
                 this.createList(receivedList.name, receivedList.url, receivedList.owner, receivedList.loaded);
                 list = this.lists.get(receivedList.url);
             }
 
-            // Se a lista recebida foi eliminada, eliminar a minha também
-            // Se a lista recebida não foi eliminada mas eu tenho elimiminada, deixar como está
+            // If the received list has been deleted, delete mine as well
+            // If the received list has not been deleted but I have it deleted, leave it as it is
             if ((receivedList.deleted && !list.deleted) || (!receivedList.deleted && list.deleted)) {
                 this.deleteList(receivedList.url);
             }
 
-            // Se não foi eliminada, dar merge aos conteúdos do meu lado
+            // If it has not been deleted, merge the contents on my side
             else {
                 list.merge(receivedList);
             }
         }
 
+        // Different merge outputs for efficiency reasons
         if (clientRequest) {
             const knownLists = Array.from(cart.map((entry) => entry.url));
             return this.toString(knownLists);
@@ -179,6 +180,7 @@ module.exports = class Cart {
         }
     }
 
+    // Storing information in the local database is only done when the Cart detects an internal change.
     changed() {
         const state = this.hasChange;
         this.hasChange = false;
