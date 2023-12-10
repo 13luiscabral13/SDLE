@@ -27,7 +27,6 @@ cancelBtn.addEventListener('click', () => {
 });
 
 
-
 function joinList() {
   console.log("Entered join list");
   const listUrl = document.getElementById('join-list-name').value;
@@ -46,7 +45,7 @@ function joinList() {
       if (json.message == "Joined the List") {
         createErrorPopup("Trying to join the Shopping List...");
         let myElm = {name: json.list.name, url: json.url};
-        shoppingLists.append(createNotLoadedShoppingList(myElm.name));
+        shoppingLists.append(createNotLoadedShoppingList());
 
       } else {
         createErrorPopup("Couldn't join the Shopping List");
@@ -60,7 +59,19 @@ function joinList() {
 // ------------------- Adding a Shopping List -------------------
 form.addEventListener("submit", function (event) {
   event.preventDefault();
-  createList()
+  const title = document.getElementById("create-list-name");
+  const titleText = title.value
+  let shoppingLists = document.querySelectorAll('.shopping-list-item');
+  console.log(shoppingLists);
+  if (shoppingLists.length != 0) {
+    for (var key in shoppingLists) {
+      if (shoppingLists[key].getAttribute('id').split('shopping-list-name-')[1] == titleText) {
+        createErrorPopup("You can't create a list with the same name!");
+        return;
+      }
+    }
+  }
+  createList(titleText)
 });
 
 // ------------------- Joining a Shopping List -------------------
@@ -154,11 +165,9 @@ function createErrorPopup(errorText) {
   document.body.appendChild(modalError);
 }
 
-function createList() {
+function createList(titleText) {
   modal.hidden = true
 
-  const title = document.getElementById("create-list-name");
-  const titleText = title.value
 
   const jsonToSend = {
     name: titleText
@@ -227,7 +236,7 @@ function getShoppingLists() {
     });
 }
 
-function getOneList(listUrl) {
+function getOneList(listUrl, reload) {
   fetch(url + '/lists/' + listUrl, {
     method: 'GET',
     headers: {
@@ -236,19 +245,36 @@ function getOneList(listUrl) {
   })
     .then(response => response.json())
     .then(data => {
-      modalShoppingList(data, listUrl)
+      if (!reload) {
+        let initialArray = JSON.parse(JSON.stringify(data.items));
+        var updatedArray = JSON.parse(JSON.stringify(data.items));      
+        modalShoppingList(data, listUrl, initialArray, updatedArray);
+      }
+      else {
+        let initialArray = JSON.parse(JSON.stringify(data.items));
+        let updatedArray = JSON.parse(JSON.stringify(data.items));
+        let checkButton = document.getElementById("check-button");
+        if (checkButton != null) {
+          checkButton.remove();
+        }
+        let modalAdd = document.getElementById("modalAddItem");
+        if (modalAdd != null) {
+          modalAdd.remove();
+        }
+        reloadList(data, initialArray, updatedArray)
+      }
     })
     .catch(error => {
       console.error(error);
     });
 }
 
-function createNotLoadedShoppingList(element) {
+function createNotLoadedShoppingList() {
   const shoppingList = document.createElement('div')
   shoppingList.classList.add('shopping-list-item')
-  shoppingList.id = "shopping-list-name-" + element.name;
+  shoppingList.id = "shopping-list-name-WaitingForLoad";
   const title = document.createElement('h1')
-  title.textContent = element.name
+  title.textContent = "Waiting for load";
   const divtitle = document.createElement('div')
   divtitle.id = "div-title"
   divtitle.append(title)
@@ -259,7 +285,7 @@ function createNotLoadedShoppingList(element) {
   return shoppingList;
 }
 
-function createShoppingList(element) {
+function createShoppingList(element, owner) {
     const shoppingList = document.createElement('div')
     shoppingList.classList.add('shopping-list-item')
     shoppingList.id = "shopping-list-name-" + element.name;
@@ -271,7 +297,6 @@ function createShoppingList(element) {
 
     const divinfo = document.createElement('div')
     divinfo.id = "div-info"
-
     const deleteBtn = document.createElement('button')
     // Set the button's ID
     deleteBtn.id = 'delete-button';
@@ -279,16 +304,27 @@ function createShoppingList(element) {
     // Create an <i> element for the trash icon
     const deleteIcon = document.createElement('i');
     deleteIcon.classList.add('fas', 'fa-trash'); // Add classes to the <i> element
+    if (parseInt(owner) !== port) {
+      const ownerText = document.createElement('p');
+      ownerText.textContent = `(${owner})`;
+      ownerText.style.fontSize = "12px";
+      ownerText.style.overflow = "hidden";
+      ownerText.style.margin = "0px";
+      ownerText.style.textOverflow = "ellipsis";
+      ownerText.style.whiteSpace = "nowrap";
+      divtitle.appendChild(ownerText);
+    }
 
-    // Append the <i> element to the button
-    deleteBtn.appendChild(deleteIcon);
+      // Append the <i> element to the button
+      deleteBtn.appendChild(deleteIcon);
 
-    deleteBtn.addEventListener('click', () => {
-      //alert("Are you sure you want to delete the shopping list? This will delete it for everyone associated to it!!")
-      checkremoveList(element.url, element.name);
-    })
+      deleteBtn.addEventListener('click', () => {
+        //alert("Are you sure you want to delete the shopping list? This will delete it for everyone associated to it!!")
+        checkremoveList(element.url, element.name);
+      })
 
     function checkremoveList(url, name) {
+      if (document.getElementById("modalDel") == null) {
       // Create modal container
       const modalDel = document.createElement("div");
       modalDel.classList.add("modal");
@@ -310,27 +346,20 @@ function createShoppingList(element) {
       modalText3.style.color = "red";
       modalText3.style.fontSize = "15px";
       modalText3.textContent = `(This action is irreversible)`;
-
-
-
-
-
-
-
       // Create "Yes" button
       const yesBtn = document.createElement("button");
       yesBtn.textContent = "Yes";
       yesBtn.addEventListener("click", () => {
-        // Handle the removal logic, e.g., call a function to delete the item
+        // Handle the removal logic, e.g., call a function to delete the list
         removeList(url, name);
-        modalDel.style.display = "none"; // Close the modal after handling removal
+        modalDel.remove();
       });
 
       // Create "No" button
       const noBtn = document.createElement("button");
       noBtn.textContent = "No";
       noBtn.addEventListener("click", () => {
-        modalDel.style.display = "none"; // Close the modal without removing the item
+        modalDel.remove();
       });
 
       // Append elements to the modal content
@@ -350,6 +379,7 @@ function createShoppingList(element) {
       modalDel.style.display = "block";
       // TODO: complete function
     }
+    }
 
     const shareBtn = document.createElement('button')
     shareBtn.id = 'share-button'
@@ -363,7 +393,7 @@ function createShoppingList(element) {
     })
 
     divtitle.addEventListener('click', () => {
-      getOneList(element.url);
+      getOneList(element.url, false);
     })
 
 
@@ -390,16 +420,16 @@ function display_shopping_lists(data) {
   data.forEach(element => {
     if (!element.deleted) {
       if (element.loaded) {
-        let shoppingList = createShoppingList(element);
+        let shoppingList = createShoppingList(element, element.owner);
         shoppingLists.appendChild(shoppingList)
       }
       else {
-        let shoppingList = createNotLoadedShoppingList(element);
+        let shoppingList = createNotLoadedShoppingList();
         shoppingLists.appendChild(shoppingList)
       }
     }
   });
-}
+} 
 
 function modalWithURL(url, listName) {
   // Create the modal
@@ -462,6 +492,7 @@ function modalWithURL(url, listName) {
 
 
 function createThisItem(itemData, initialArray, updatedArray) {
+  console.log("Entered createThisItem: ", updatedArray, initialArray);
   console.log(itemData);
   const itemDiv = document.createElement("div");
   itemDiv.style.display = "flex";
@@ -645,7 +676,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
       if (checkInteger(text)) {
         itemQua.innerText = itemData.total;
         itemQua.contentEditable = false; // Disable contentEditable
-        alert("Please input only integers")
+        alert("Please input only numbers")
       }
       else if (checkSmaller(parseInt(text), itemData.total)) {
         itemQua.innerText = itemData.total;
@@ -671,17 +702,216 @@ function createThisItem(itemData, initialArray, updatedArray) {
   itemDiv.appendChild(itemButtons);
   return itemDiv;
 }
-function modalShoppingList(data, listUrl) {
+
+function reloadList(iniData, updatedArray, initialArray) {
+  console.log("Entered reloadList: ", updatedArray, initialArray);
+  const { items: dataItems, listName: dataName } = iniData;
+  const ul = document.getElementById("this-list-items");
+  ul.innerHTML = ""; // Remove all items inside the UL
+  ul.style.height = "90%";
+  ul.style.overflowY = "scroll";
+  index = -1;
+  dataItems.forEach(itemData => {
+    index = index + 1;
+    const itemDiv = createThisItem(itemData, initialArray, updatedArray, initialArray);
+    ul.appendChild(itemDiv);
+  });
+  let createDiv = addCreateDiv(ul, "", dataName, updatedArray, initialArray);
+  ul.appendChild(createDiv);
+}
+function addCreateDiv(ul, createDiv, dataName, updatedArray, initialArray) {
+  console.log("Entered addCreateDiv: ", updatedArray, initialArray);
+  if (createDiv != "") {
+    createDiv.remove();
+  }
+  createDiv = document.createElement("div");
+  const createItemP = document.createElement("p");
+  const createItem = createButtonWithIcon("fas fa-plus");
+  createDiv.style.marginTop = "-5px";
+  createItem.style.marginRight = "5px";
+  createDiv.style.display = "flex";
+  createDiv.style.alignItems = "center";
+  createItemP.textContent = "Add Item";
+  createDiv.appendChild(createItem);
+  createDiv.appendChild(createItemP);
+  createItem.addEventListener("click", function () {
+    createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv);
+  });
+  return createDiv;
+}
+
+function createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv) {
+  console.log("Entered createAddItemModal: ", updatedArray, initialArray)
+  // Create the modal element
+  const modalAddItem = document.createElement("div");
+  modalAddItem.id = "modalAddItem";
+  modalAddItem.className = "modalAddItem";
+  // Create the form element
+  const modalForm = document.createElement("form");
+  modalForm.id = "addItemForm";
+  modalForm.style.backgroundColor = "white";
+  modalForm.style.textAlign = "center";
+  modalForm.style.width = "25%"; // Use percentage for responsiveness
+  modalForm.style.maxWidth = "400px"; // Set a maximum width for larger screens
+  modalForm.style.height = "15%"; // Use percentage for responsiveness
+  modalForm.style.position = "relative"; // Set position to relative
+  modalForm.style.padding = "15px";
+
+  const modalHeader = document.createElement("h3");
+  modalHeader.textContent = "What will the new item be?";
+  modalHeader.style.fontWeight = "normal";
+
+  modalHeader.style.marginTop = "10px";
+  // Create input fields and labels
+  const itemNameLabel = document.createElement("label");
+  itemNameLabel.textContent = "Name";
+  itemNameLabel.style.fontWeight = "normal";
+  itemNameLabel.style.textAlign = "left";
+  const itemNameInput = document.createElement("input");
+  itemNameLabel.style.fontSize = "14px";
+  itemNameLabel.style.display = "flex";
+
+  const itemQuantityGoalLabel = document.createElement("label");
+  itemQuantityGoalLabel.textContent = "Quantity";
+  itemQuantityGoalLabel.style.fontSize = "14px";
+  itemQuantityGoalLabel.style.textAlign = "left";
+  itemQuantityGoalLabel.style.fontWeight = "normal";
+
+  const itemQuantityGoalInput = document.createElement("input");
+  itemQuantityGoalInput.style.width = "20%";
+  itemQuantityGoalInput.style.display = "flex";
+  itemQuantityGoalInput.style.marginLeft = "4px";
+  // Create close button with icon
+  const closeAddItem = createButtonWithIcon("fas fa-times");
+  closeAddItem.addEventListener("click", function () {
+    // Close the modal when the close button is clicked
+    modalAddItem.remove();
+  });
+
+  // Create submit button with icon
+  const submitButton = createButtonWithIcon("fas fa-check");
+  submitButton.style.marginTop = "5%";
+  // Set position to absolute and place on the top right
+  closeAddItem.style.position = "absolute";
+  closeAddItem.style.top = "10px";
+  closeAddItem.style.right = "10px";
+
+  const itemName = document.createElement("div");
+  const itemQuantity = document.createElement("div");
+  const inputsDiv = document.createElement("div");
+
+  itemName.appendChild(itemNameLabel);
+  itemName.appendChild(itemNameInput);
+
+  itemQuantity.appendChild(itemQuantityGoalLabel);
+  itemQuantity.appendChild(itemQuantityGoalInput);
+
+  itemName.style.marginRight = "30px";
+  inputsDiv.appendChild(itemName);
+  inputsDiv.appendChild(itemQuantity);
+  inputsDiv.appendChild(submitButton);
+
+  inputsDiv.style.display = "flex";
+  inputsDiv.style.marginTop = "5%";
+  inputsDiv.style.justifyContent = "center";
+  inputsDiv.style.alignItems = "center";
+
+  // Append labels, input fields, and buttons to the form
+  modalForm.appendChild(modalHeader);
+  modalForm.appendChild(inputsDiv);
+  modalForm.appendChild(closeAddItem);
+
+  // Append the form to the modal
+  modalAddItem.appendChild(modalForm);
+
+  // Append the modal to the body of the document
+  document.body.appendChild(modalAddItem);
+
+  submitButton.addEventListener("click", function () {
+    if (!checkIfItemExists(itemNameInput.value.trim(), updatedArray)) {
+      if (itemNameInput.value.trim() != "" && /^\d+$/.test(itemQuantityGoalInput.value.trim())) {
+        if (parseInt(itemQuantityGoalInput.value.trim()) <= 0) {
+          alert("The quantity cannot be a non-positive number!");
+          console.log("Error!");
+        }
+        else {
+          console.log("Name: ", itemNameInput.value, " Quantity: ", itemQuantityGoalInput.value);
+          let newItem = { "name": itemNameInput.value, "deleted": false, "current": 0, "total": parseInt(itemQuantityGoalInput.value) }
+          modalAddItem.remove();
+          addToArray(newItem, updatedArray, initialArray);
+          const newitemdiv = createThisItem(newItem, initialArray, updatedArray);
+          ul.appendChild(newitemdiv);
+          createDiv = addCreateDiv(ul, createDiv, dataName, updatedArray, initialArray)
+          ul.appendChild(createDiv);
+        }
+
+      }
+      else if (itemNameInput.value.trim() == "" && /^\d+$/.test(itemQuantityGoalInput.value.trim())) {
+        alert("Please fill a name!")
+        console.log("Error!");
+      }
+      else if (itemNameInput.value.trim() != "" && !/^\d+$/.test(itemQuantityGoalInput.value.trim())) {
+        alert("Quantity can only be an number!")
+        console.log("Error!");
+      }
+      else {
+        alert("The name cannot be empty and the quantity must be an number!")
+        console.log("Error!");
+      }
+    }
+    else {
+      alert("You can't create an already created item...");
+      console.log("Error!");
+    }
+  })
+
+  const mediaQuery = window.matchMedia("(max-width: 600px)");
+  function checkIfItemExists(name, array) {
+    console.log("Checking if ", name, " exists in ", array);
+    for (var key in array) {
+      if (array[key]['name'] == name) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function handleMediaQueryChange(e) {
+    if (e.matches) {
+      // Adjust styles for smaller screens
+      modalForm.style.width = "90%";
+      modalForm.style.height = "80%";
+      // ... (adjust other styles as needed)
+    } else {
+      // Revert to original styles for larger screens
+      modalForm.style.width = "50%";
+      modalForm.style.height = "20%";
+      // ... (revert other styles as needed)
+    }
+  }
+
+  // Initial check
+  handleMediaQueryChange(mediaQuery);
+}
+function addToArray(newItem, updatedArray, initialArray) {
+  updatedArray[updatedArray.length] = newItem;
+  checkForChanges(initialArray, updatedArray);
+}
+function modalShoppingList(data, listUrl, initialArray, updatedArray) {
+  setInterval(function () {
+    console.log("reloadList");
+    getOneList(listUrl, true);
+  }, 10000);
+
   const { items: dataItems, listName: dataName } = data;
-  let initialArray = JSON.parse(JSON.stringify(dataItems));
   const shopList = document.getElementById("thisShoppingList");
   shopList.setAttribute("data-url", listUrl);
   const ul = document.getElementById("this-list-items");
   const name = document.getElementById("this-list-name");
-  var updatedArray = JSON.parse(JSON.stringify(dataItems));
   name.textContent = dataName;
   name.style.paddingTop = "10px";
   ul.innerHTML = "";
+  ul.style.height = "90%";
+  ul.style.overflowY = "scroll";
   index = -1;
   dataItems.forEach(itemData => {
     index = index + 1;
@@ -690,188 +920,8 @@ function modalShoppingList(data, listUrl) {
   }
   );
 
-  let createDiv = addCreateDiv(ul, "");
+  let createDiv = addCreateDiv(ul, "", dataName, updatedArray, initialArray);
   ul.appendChild(createDiv);
-
-
-
-  function createAddItemModal() {
-    // Create the modal element
-    const modalAddItem = document.createElement("div");
-    modalAddItem.id = "modalAddItem";
-    modalAddItem.className = "modalAddItem";
-    // Create the form element
-    const modalForm = document.createElement("form");
-    modalForm.id = "addItemForm";
-    modalForm.style.backgroundColor = "white";
-    modalForm.style.textAlign = "center";
-    modalForm.style.width = "25%"; // Use percentage for responsiveness
-    modalForm.style.maxWidth = "400px"; // Set a maximum width for larger screens
-    modalForm.style.height = "15%"; // Use percentage for responsiveness
-    modalForm.style.position = "relative"; // Set position to relative
-    modalForm.style.padding = "15px";
-
-    const modalHeader = document.createElement("h3");
-    modalHeader.textContent = "What will the new item be?";
-    modalHeader.style.fontWeight = "normal";
-
-    modalHeader.style.marginTop = "10px";
-    // Create input fields and labels
-    const itemNameLabel = document.createElement("label");
-    itemNameLabel.textContent = "Name";
-    itemNameLabel.style.fontWeight = "normal";
-    itemNameLabel.style.textAlign = "left";
-    const itemNameInput = document.createElement("input");
-    itemNameLabel.style.fontSize = "14px";
-    itemNameLabel.style.display = "flex";
-
-    const itemQuantityGoalLabel = document.createElement("label");
-    itemQuantityGoalLabel.textContent = "Quantity";
-    itemQuantityGoalLabel.style.fontSize = "14px";
-    itemQuantityGoalLabel.style.textAlign = "left";
-    itemQuantityGoalLabel.style.fontWeight = "normal";
-
-    const itemQuantityGoalInput = document.createElement("input");
-    itemQuantityGoalInput.style.width = "20%";
-    itemQuantityGoalInput.style.display = "flex";
-    itemQuantityGoalInput.style.marginLeft = "4px";
-    // Create close button with icon
-    const closeAddItem = createButtonWithIcon("fas fa-times");
-    closeAddItem.addEventListener("click", function () {
-      // Close the modal when the close button is clicked
-      modalAddItem.remove();
-    });
-
-    // Create submit button with icon
-    const submitButton = createButtonWithIcon("fas fa-check");
-    submitButton.style.marginTop = "5%";
-    // Set position to absolute and place on the top right
-    closeAddItem.style.position = "absolute";
-    closeAddItem.style.top = "10px";
-    closeAddItem.style.right = "10px";
-
-    const itemName = document.createElement("div");
-    const itemQuantity = document.createElement("div");
-    const inputsDiv = document.createElement("div");
-
-    itemName.appendChild(itemNameLabel);
-    itemName.appendChild(itemNameInput);
-
-    itemQuantity.appendChild(itemQuantityGoalLabel);
-    itemQuantity.appendChild(itemQuantityGoalInput);
-
-    itemName.style.marginRight = "30px";
-    inputsDiv.appendChild(itemName);
-    inputsDiv.appendChild(itemQuantity);
-    inputsDiv.appendChild(submitButton);
-
-    inputsDiv.style.display = "flex";
-    inputsDiv.style.marginTop = "5%";
-    inputsDiv.style.justifyContent = "center";
-    inputsDiv.style.alignItems = "center";
-
-    // Append labels, input fields, and buttons to the form
-    modalForm.appendChild(modalHeader);
-    modalForm.appendChild(inputsDiv);
-    modalForm.appendChild(closeAddItem);
-
-    // Append the form to the modal
-    modalAddItem.appendChild(modalForm);
-
-    // Append the modal to the body of the document
-    document.body.appendChild(modalAddItem);
-
-    submitButton.addEventListener("click", function () {
-      if (!checkIfItemExists(itemNameInput.value.trim(), updatedArray)) {
-        if (itemNameInput.value.trim() != "" && /^\d+$/.test(itemQuantityGoalInput.value.trim())) {
-          if (parseInt(itemQuantityGoalInput.value.trim()) <= 0) {
-            alert("The quantity cannot be a non-positive integer!");
-            console.log("Error!");
-          }
-          else {
-            console.log("Name: ", itemNameInput.value, " Quantity: ", itemQuantityGoalInput.value);
-            let newItem = { "name": itemNameInput.value, "deleted": false, "current": 0, "total": parseInt(itemQuantityGoalInput.value) }
-            modalAddItem.remove();
-            addToArray(newItem, updatedArray, initialArray);
-            const newitemdiv = createThisItem(newItem, initialArray, updatedArray);
-            ul.appendChild(newitemdiv);
-            createDiv = addCreateDiv(ul, createDiv)
-            ul.appendChild(createDiv);
-          }
-
-        }
-        else if (itemNameInput.value.trim() == "" && /^\d+$/.test(itemQuantityGoalInput.value.trim())) {
-          alert("Please fill a name!")
-          console.log("Error!");
-        }
-        else if (itemNameInput.value.trim() != "" && !/^\d+$/.test(itemQuantityGoalInput.value.trim())) {
-          alert("Quantity can only be an integer!")
-          console.log("Error!");
-        }
-        else {
-          alert("The name cannot be empty and the quantity must be an integer!")
-          console.log("Error!");
-        }
-      }
-      else {
-        alert("You can't create an already created item...");
-        console.log("Error!");
-      }
-    })
-
-    const mediaQuery = window.matchMedia("(max-width: 600px)");
-    function checkIfItemExists(name, array) {
-      console.log("Checking if ", name, " exists in ", array);
-      for (var key in array) {
-        if (array[key]['name'] == name) {
-          return true;
-        }
-      }
-      return false;
-    }
-    function handleMediaQueryChange(e) {
-      if (e.matches) {
-        // Adjust styles for smaller screens
-        modalForm.style.width = "90%";
-        modalForm.style.height = "80%";
-        // ... (adjust other styles as needed)
-      } else {
-        // Revert to original styles for larger screens
-        modalForm.style.width = "50%";
-        modalForm.style.height = "20%";
-        // ... (revert other styles as needed)
-      }
-    }
-
-    // Initial check
-    handleMediaQueryChange(mediaQuery);
-  }
-
-  function addToArray(newItem, updatedArray, initialArray) {
-    updatedArray[updatedArray.length] = newItem;
-    checkForChanges(initialArray, updatedArray);
-  }
-  function addCreateDiv(ul, createDiv) {
-    if (createDiv != "") {
-      createDiv.remove();
-    }
-    createDiv = document.createElement("div");
-    const createItemP = document.createElement("p");
-    const createItem = createButtonWithIcon("fas fa-plus");
-    createDiv.style.marginTop = "-5px";
-    createItem.style.marginRight = "5px";
-    createDiv.style.display = "flex";
-    createDiv.style.alignItems = "center";
-    createItemP.textContent = "Add Item";
-    createItem.addEventListener("click", function () {
-      createAddItemModal(dataName);
-    });
-    createDiv.appendChild(createItem);
-    createDiv.appendChild(createItemP);
-    return createDiv;
-  }
-
-
   const closeButton = createButtonWithIcon("fas fa-times");
   closeButton.style.position = "absolute";
   closeButton.style.top = "10px";
@@ -891,8 +941,10 @@ function modalShoppingList(data, listUrl) {
 
   // Add an event listener to hide the modal when the close button is clicked
   closeButton.addEventListener("click", function () {
+    updatedArray = initialArray;
     shopList.hidden = true;
     checkButton.hidden = true;
+    return;
   });
 
   // Access the form inside the element
@@ -996,7 +1048,7 @@ function compareArrays(initialArray, updatedArray) {
     var keyUp = checkIfInArray(initialArray[key]['name'], updatedArray); // Key in updatedArray
     if (keyUp != -1) { // if in updated Array
       if (JSON.stringify(initialArray[key]) != JSON.stringify(updatedArray[keyUp])) { /* if different in both arrays */
-        updatedElements.push(updatedArray[key])
+        updatedElements.push(updatedArray[keyUp])
       }
       passedUpdatedElements.add(updatedArray[keyUp]);
     }

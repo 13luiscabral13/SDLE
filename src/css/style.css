@@ -93,7 +93,7 @@ header {
     border: none;
 }
 
-.shopping-list-item:hover {
+#div-title:hover {
     cursor: pointer;
 }
 
