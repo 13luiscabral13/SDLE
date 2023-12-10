@@ -6,6 +6,7 @@ if (isMainThread) {
   const fs = require('fs');
   const path = require('path');
   const sqlite3 = require('sqlite3').verbose();
+  const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
   
   const app = express();
   app.use(express.json());
@@ -82,7 +83,7 @@ if (isMainThread) {
   // GET requests
   app.get('/lists', (req, res) => { // reads all the Users shopping lists
     let info = cart.info();
-    console.log("Info: ", info);
+    console.log("Info:\n", info);
     res.status(200).send(info);
   });
 
@@ -92,7 +93,7 @@ if (isMainThread) {
     const url = fullUrl.replace(/^\/lists\//, '');
     // Fetch list name based on the provided URL
     let list = cart.getList(url);
-    console.log("List: ", list);
+    //console.log("List: ", list);
     res.status(200).send(list);
   });
 
@@ -111,7 +112,7 @@ if (isMainThread) {
     else {
       response = "You are not the owner of this list";
     }
-    console.log(response)
+    //console.log(response)
     res.status(200).send(json = {message: response});
   });
 
@@ -126,7 +127,7 @@ if (isMainThread) {
     } catch (error) {
       console.error(error);
     }
-    console.log(list);
+    //console.log(list);
     res.status(200).send(json = {message: `Created the List`, url: list})
   });
 
@@ -140,7 +141,7 @@ if (isMainThread) {
       console.error(error);
     }
     let createdList = cart.getList(listaUrl);
-    console.log("Cart Info ", cart.info());
+    //console.log("Cart Info ", cart.info());
     res.status(200).send(json = {message: `Joined the List`, url: listaUrl, list: createdList});
   });
 
@@ -169,7 +170,7 @@ if (isMainThread) {
     } catch (error) {
       console.error(error);
     } 
-    console.log(cart.getList(listUrl));
+    //console.log(cart.getList(listUrl));
     res.status(200).json({message: `Correctly changed items`, cart: cart.info()});
   });
 
@@ -178,7 +179,7 @@ if (isMainThread) {
   });
 
   const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: { dbFile: `../database/local/${port}.db` }});
-  setInterval(check_cart_isChanged, 5000)
+  setInterval(check_cart_isChanged, config.db_update)
 
   function check_cart_isChanged() {
     if(cart.changed()) {

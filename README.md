@@ -7,17 +7,17 @@
 - [Database](./database/)
 
 ## How to Run:
-
-- firstly bend over and spell run (in english)
-- Create the packages - ``npm init``
-- This will install all the dependencies listed in package.json and ensure that they have the exact versions specified in package-lock.json.
+- This will install all the dependencies listed in package.json.
     - ``npm install``
-- Run Server
+- Run Proxy & Servers
     - ``cd src``
-    - ``npm start`` || ``node server.js`` (since the 'start' command has only the _node server.js_ command)
+    - ``npm run cloud`` (this command will start the Proxy and a static number of Servers described in [config file](./src/config.json))
 - Run Client
     - ``cd src``
-    - ``node client.js <PORT>`` - (e.g. node client.js 5500)
+    - ``npm run start-client PORT`` - (e.g. npm run client 5500)
+        - SERVER PORTS ARE STATIC! DO NOT USE THEM! (check [config file](./src/config.json))
+- Simulate Server disconnection
+    - ``kill pid`` (pid is defined for each server when you start the cloud, check the console)
 
 ## Members
 

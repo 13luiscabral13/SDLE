@@ -19,17 +19,19 @@ async function updateNeighboor(neighborPort, cart) {
     requester.send(cart);
 
     // Promessa para o timeout
-    const timeoutPromise = new Promise((resolve, reject) => {
-        setTimeout(() => {
-            reject(new Error('Task timeout error happened'));
-        }, 2000);
-    });
+    const timeoutPromise = (neighborPort) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error(`Task timeout - Server ${neighborPort} not responding...`));
+            }, 2000);
+        });
+    };
 
     try {
         // Espera pela resposta do servidor vizinho ou timeout
-        const [response] = await Promise.race([requester.receive(), timeoutPromise]);
+        const [response] = await Promise.race([requester.receive(), timeoutPromise(neighborPort)]);
 
-        console.log(`${port} Received ACK from server ${neighborPort}`);
+        //console.log(`${port} Received ACK from server ${neighborPort}`);
         updated++;
     } catch (error) {
         console.error(error.message);
@@ -60,7 +62,7 @@ async function updateAllNeighboors(httpPort, cart) {
 async function listeningToUpdates(httpPort) {
     const responder = new zmq.Reply();
     await responder.bind(`tcp://127.0.0.1:${httpPort}`);
-    console.log(`Listening for updates on port ${httpPort}`);
+    //console.log(`Listening for updates on port ${httpPort}`);
 
     while (true) {
         // Worker thread recebe update vindo de outro server
@@ -68,7 +70,7 @@ async function listeningToUpdates(httpPort) {
 
         if (messages.length > 0) {
             const [request] = messages;
-            console.log(`\n${port} Received update`);
+            //console.log(`\n${port} Received update`);
 
             // Worker thread avisa a main thread de que recebeu um novo update e precisa de fazer merge do cart
             parentPort.postMessage({ type: 'updateCart', cart: request.toString()});
@@ -80,7 +82,7 @@ async function listeningToUpdates(httpPort) {
 
 if (!isMainThread) {
     let { httpPort } = workerData;
-    console.log(httpPort);
+
     // Worker thread está atenta a updates mandados por outros servers
     listeningToUpdates(httpPort);
 

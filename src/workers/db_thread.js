@@ -47,6 +47,7 @@ if (!isMainThread) {
         });
       });
     });
+    console.log("DB updated!")
   }
 
   parentPort.on('message', (message) => {
