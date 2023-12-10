@@ -23,8 +23,8 @@ async function run() {
         frontend.close();
         backend.close();
         proxy.terminate();
-        context.term();
         console.log('Proxy terminated');
+        process.exit()
     });
 
     proxy.run();
@@ -50,6 +50,10 @@ if (cluster.isMaster) {
             }
         });
     }
+
+    cluster.on('death', async function(worker) {
+        console.log('worker ' + worker.process.pid + ' with port: ' + worker.port + ' exited');
+    });
 
     cluster.on('exit', async function(worker) {
         console.log('worker ' + worker.process.pid + ' with port: ' + worker.port + ' exited');
