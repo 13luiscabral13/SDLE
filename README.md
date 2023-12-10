@@ -7,7 +7,6 @@
 - [Database](./database/)
 
 ## How to Run:
-- Create the packages - ``npm init``
 - This will install all the dependencies listed in package.json.
     - ``npm install``
 - Run Proxy & Servers
@@ -17,6 +16,8 @@
     - ``cd src``
     - ``npm run start-client PORT`` - (e.g. npm run client 5500)
         - SERVER PORTS ARE STATIC! DO NOT USE THEM! (check [config file](./src/config.json))
+- Simulate Server disconnection
+    - ``kill pid`` (pid is defined for each server when you start the cloud, check the console)
 
 ## Members
 
