@@ -1,4 +1,4 @@
-const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
+const { isMainThread, parentPort, workerData } = require('worker_threads');
 const sqlite3 = require('sqlite3').verbose();
 
 if (!isMainThread) {
@@ -47,7 +47,6 @@ if (!isMainThread) {
         });
       });
     });
-    //console.log("DB updated!")
   }
 
   parentPort.on('message', (message) => {

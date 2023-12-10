@@ -1,5 +1,4 @@
-const { response } = require('express');
-const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
+const { isMainThread, parentPort, workerData } = require('worker_threads');
 const zmq = require("zeromq");
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
@@ -27,7 +26,7 @@ if (!isMainThread) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         console.log("Cart successfully sent!")
 
-        for await (const [delimiter, id, response] of sock) {
+        for await (const [_, id, response] of sock) {
             if (id.toString() == port.toString()) {
                 console.log("Response Received!");
                 cart = response.toString();
