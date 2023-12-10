@@ -46,7 +46,6 @@ function joinList() {
     .then(json => {
       if (json.message == "Joined the List") {
         createErrorPopup("Trying to join the Shopping List...");
-        let myElm = { name: json.list.name, url: json.url };
         shoppingLists.append(createNotLoadedShoppingList());
 
       } else {
@@ -64,7 +63,6 @@ form.addEventListener("submit", function (event) {
   const title = document.getElementById("create-list-name");
   const titleText = title.value
   let shoppingLists = document.querySelectorAll('.shopping-list-item');
-  console.log(shoppingLists);
   if (shoppingLists.length != 0) {
     for (var key in shoppingLists) {
       if (shoppingLists[key].getAttribute('id').split('shopping-list-name-')[1] == titleText) {
@@ -119,6 +117,7 @@ function createSuccessPopup(successText) {
   modalContent.style.backgroundColor = "white";
   modalContent.style.borderRadius = "5px";
   modalContent.style.position = "relative";
+  modalContent.style.justifyContent = "center";
   const modalText = document.createElement("p");
   modalText.textContent = successText;
   modalText.style.fontFamily = "Arial, sans-serif";
@@ -151,10 +150,15 @@ function createErrorPopup(errorText) {
   modalContent.style.width = "30%";
   modalContent.style.height = "20%";
   modalContent.style.textAlign = "center";
+  modalContent.style.display = "flex";
+  modalContent.style.flexDirection = "column";
+  modalContent.style.justifyContent = "center";
+  modalContent.style.alignItems = "center";
   modalContent.style.padding = "15px";
   modalContent.style.backgroundColor = "white";
   modalContent.style.borderRadius = "5px";
   modalContent.style.position = "relative";
+  modalContent.style.justifyContent = "center";
   const modalText = document.createElement("p");
   modalText.textContent = errorText;
   modalText.style.fontFamily = "Arial, sans-serif";
@@ -264,7 +268,7 @@ function getOneList(listUrl) {
       if (modalAdd != null) {
         modalAdd.remove();
       }
-      modalShoppingList(data, listUrl, initialArray, updatedArray);
+      modalShoppingList(data, listUrl);
     })
     .catch(error => {
       console.error(error);
@@ -272,16 +276,16 @@ function getOneList(listUrl) {
 }
 
 
-function modalShoppingList(data, listUrl, initialArray, updatedArray) {
+function modalShoppingList(data, listUrl) {
 
   const shopList = document.getElementById("thisShoppingList");
   shopList.setAttribute("data-url", listUrl);
-  buildUL(data, updatedArray, initialArray);
+  buildUL(data);
 
   const closeButton = createButtonWithIcon("fas fa-times");
   closeButton.style.position = "absolute";
-  closeButton.style.top = "10px";
-  closeButton.style.right = "10px";
+  closeButton.style.top = "20px";
+  closeButton.style.right = "30px";
   closeButton.style.cursor = "pointer";
 
   const checkButton = createButtonWithIcon("fas fa-check");
@@ -314,7 +318,6 @@ function modalShoppingList(data, listUrl, initialArray, updatedArray) {
   formInsideShoppingList.appendChild(checkButton);
 
   checkButton.addEventListener("click", function () {
-    console.log("On check click Initial Array was: ", initialArray, " and updatedArray was: ",  updatedArray);
     changeItems(shopList, checkButton);
     closeList(shopList, checkButton);
   });
@@ -322,8 +325,7 @@ function modalShoppingList(data, listUrl, initialArray, updatedArray) {
 }
 
 
-function buildUL(iniData, updatedArray, initialArray) {
-  console.log("Calling buildUL with arguments: ", updatedArray, initialArray)
+function buildUL(iniData) {
   const { items: dataItems, listName: dataName } = iniData;
   const ul = document.getElementById("this-list-items");
   ul.innerHTML = ""; // Remove all items inside the UL
@@ -332,16 +334,14 @@ function buildUL(iniData, updatedArray, initialArray) {
   index = -1;
   dataItems.forEach(itemData => {
     index = index + 1;
-    const itemDiv = createThisItem(itemData, initialArray, updatedArray, initialArray);
+    const itemDiv = createThisItem(itemData);
     ul.appendChild(itemDiv);
   });
-  let createDiv = addCreateDiv(ul, "", dataName, updatedArray, initialArray);
+  let createDiv = addCreateDiv(ul, "", dataName);
   ul.appendChild(createDiv);
 }
 function changeItems(shopList, checkButton) {
-  console.log("Calling changeItems: ", initialArray, updatedArray);
   allchanges = compareArrays(initialArray, updatedArray);
-  console.log(allchanges);
   const urlShop = shopList.getAttribute("data-url");
   const jsonToSend = {
     changes: allchanges,
@@ -377,14 +377,8 @@ function checkForChanges(initialArray, updatedArray) {
   const sortedUpdatedArray = sortArray(updatedArray);
 
   if (JSON.stringify(sortedInitialArray) === JSON.stringify(sortedUpdatedArray)) {
-    console.log("Can't find changes");
-    console.log("Initial: ", initialArray);
-    console.log("Updated: ", updatedArray);
     document.getElementById("saveChanges").hidden = true;
   } else {
-    console.log("Found Changes!");
-    console.log("Initial: ", initialArray);
-    console.log("Updated: ", updatedArray);
     document.getElementById("saveChanges").hidden = false;
   }
 }
@@ -410,11 +404,33 @@ function createShoppingList(element, owner) {
   const shoppingList = document.createElement('div')
   shoppingList.classList.add('shopping-list-item')
   shoppingList.id = "shopping-list-name-" + element.name;
+  const numberOfItems = document.createElement('p');
+  if (element.items.length == 1) {
+    numberOfItems.textContent = "(" + element.items.length + " item)";
+  }
+  else {
+    numberOfItems.textContent = "(" + element.items.length + " items)";
+  }
+  numberOfItems.style.fontSize = "12px";
+  numberOfItems.style.position = "absolute";
+  numberOfItems.style.top = "-5px";
+  numberOfItems.style.right = "5px";
   const title = document.createElement('h1')
   title.textContent = element.name
   const divtitle = document.createElement('div')
   divtitle.id = "div-title"
+  divtitle.style.transition = "background-color 0.2s ease"; // Add transition property
+
+  divtitle.onmouseover = function () {
+    this.style.backgroundColor = "#fff4c7";
+  };
+
+  divtitle.onmouseout = function () {
+    this.style.backgroundColor = "white";
+  };
+  divtitle.appendChild(numberOfItems);
   divtitle.append(title)
+
 
   const divinfo = document.createElement('div')
   divinfo.id = "div-info"
@@ -425,9 +441,9 @@ function createShoppingList(element, owner) {
   // Create an <i> element for the trash icon
   const deleteIcon = document.createElement('i');
   deleteIcon.classList.add('fas', 'fa-trash'); // Add classes to the <i> element
-  if (parseInt(owner) !== port) {
+  if (parseInt(owner) !== port && owner !== "(undefined)") {
     const ownerText = document.createElement('p');
-    ownerText.textContent = `(${owner})`;
+    ownerText.textContent = `(From ${owner})`;
     ownerText.style.fontSize = "12px";
     ownerText.style.overflow = "hidden";
     ownerText.style.margin = "0px";
@@ -444,8 +460,10 @@ function createShoppingList(element, owner) {
     checkremoveList(element.url, element.name);
   })
 
+
   const shareBtn = document.createElement('button')
   shareBtn.id = 'share-button'
+
 
   const shareIcon = document.createElement('i');
   shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
@@ -532,7 +550,6 @@ function checkremoveList(url, name) {
 
 
 function display_shopping_lists(data) {
-
   let lastChild = shoppingLists.lastElementChild;
   while (lastChild) {
     lastChild.remove()
@@ -613,7 +630,7 @@ function modalWithURL(url, listName) {
 }
 
 
-function createThisItem(itemData, initialArray, updatedArray) {
+function createThisItem(itemData) {
   const itemDiv = document.createElement("div");
   itemDiv.style.display = "flex";
   itemDiv.style.justifyContent = "space-between";
@@ -670,7 +687,6 @@ function createThisItem(itemData, initialArray, updatedArray) {
     addButton.addEventListener("click", function () {
       intCur = parseInt(itemCur.textContent);
       intQua = parseInt(itemQua.textContent);
-      console.log("Cur: ", intCur, " Qua: ", intQua);
       newIntCur = intCur + 1;
       itemCur.textContent = newIntCur.toString();
       for (var key in updatedArray) {
@@ -688,6 +704,9 @@ function createThisItem(itemData, initialArray, updatedArray) {
       }
       subButton.hidden = false;
     });
+  }
+  else {
+    addButton.hidden = true;
   }
 
   subButton.addEventListener("click", function () {
@@ -790,7 +809,6 @@ function createThisItem(itemData, initialArray, updatedArray) {
   itemQua.addEventListener("keydown", (event) => {
     console.log(event.key);
     if (event.key === "Enter") {
-      console.log("Enter was pressed");
       // Check if the Enter key was pressed
       let text = convert(itemQua.innerText);
       if (checkInteger(text)) {
@@ -807,7 +825,6 @@ function createThisItem(itemData, initialArray, updatedArray) {
         itemQua.innerText = text;
         itemQua.contentEditable = false; // Disable contentEditable
         changeArray(text);
-        console.log("Updated Array: ", updatedArray);
         checkForChanges(initialArray, updatedArray);
       }
     }
@@ -824,7 +841,7 @@ function createThisItem(itemData, initialArray, updatedArray) {
 }
 
 
-function addCreateDiv(ul, createDiv, dataName, updatedArray, initialArray) {
+function addCreateDiv(ul, createDiv, dataName) {
   if (createDiv != "") {
     createDiv.remove();
   }
@@ -839,13 +856,12 @@ function addCreateDiv(ul, createDiv, dataName, updatedArray, initialArray) {
   createDiv.appendChild(createItem);
   createDiv.appendChild(createItemP);
   createItem.addEventListener("click", function () {
-    createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv);
+    createAddItemModal(ul, dataName, createDiv);
   });
   return createDiv;
 }
 
-function createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv) {
-  console.log("Entered createAddItemModal: ", updatedArray, initialArray)
+function createAddItemModal(ul, dataName, createDiv) {
   // Create the modal element
   const modalAddItem = document.createElement("div");
   modalAddItem.id = "modalAddItem";
@@ -942,10 +958,10 @@ function createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv)
           console.log("Name: ", itemNameInput.value, " Quantity: ", itemQuantityGoalInput.value);
           let newItem = { "name": itemNameInput.value, "deleted": false, "current": 0, "total": parseInt(itemQuantityGoalInput.value) }
           modalAddItem.remove();
-          addToArray(newItem, updatedArray, initialArray);
-          const newitemdiv = createThisItem(newItem, initialArray, updatedArray);
+          addToArray(newItem);
+          const newitemdiv = createThisItem(newItem);
           ul.appendChild(newitemdiv);
-          createDiv = addCreateDiv(ul, createDiv, dataName, updatedArray, initialArray)
+          createDiv = addCreateDiv(ul, createDiv, dataName)
           ul.appendChild(createDiv);
         }
 
@@ -971,7 +987,6 @@ function createAddItemModal(ul, dataName, updatedArray, initialArray, createDiv)
 
   const mediaQuery = window.matchMedia("(max-width: 600px)");
   function checkIfItemExists(name, array) {
-    console.log("Checking if ", name, " exists in ", array);
     for (var key in array) {
       if (array[key]['name'] == name) {
         return true;
@@ -1005,7 +1020,7 @@ function checkIfInArray(name, array) {
   }
   return -1;
 }
-function addToArray(newItem, updatedArray, initialArray) {
+function addToArray(newItem) {
   updatedArray[updatedArray.length] = newItem;
   checkForChanges(initialArray, updatedArray);
 }
