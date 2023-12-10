@@ -285,8 +285,8 @@ function modalShoppingList(data, listUrl) {
 
   const closeButton = createButtonWithIcon("fas fa-times");
   closeButton.style.position = "absolute";
-  closeButton.style.top = "10px";
-  closeButton.style.right = "10px";
+  closeButton.style.top = "20px";
+  closeButton.style.right = "30px";
   closeButton.style.cursor = "pointer";
 
   const checkButton = createButtonWithIcon("fas fa-check");
@@ -467,8 +467,10 @@ function createShoppingList(element, owner) {
     checkremoveList(element.url, element.name);
   })
 
+
   const shareBtn = document.createElement('button')
   shareBtn.id = 'share-button'
+
 
   const shareIcon = document.createElement('i');
   shareIcon.classList.add('fas', 'fa-share'); // Add classes to the <i> element
