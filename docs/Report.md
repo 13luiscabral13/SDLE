@@ -1,10 +1,18 @@
 # Report - Presentation
 
-## Topics
+- André Costa, up201905916@up.pt
+- Bárbara Carvalho, up202004695@up.pt
+- Fábio Sá, up202007658@up.pt
+- Luís Cabral, up202006464@up.pt
+
+---
+
+## Index
 
 - [0. Context and Overview](#0-context-and-overview)
 - [1. Technology](#1-technology)
-- [2. Local First](#2-local-first)
+- [2. Cart API](#2-cart-api) 
+- [3. Local First](#3-local-first)
     - [2.1 Client Request Management](#21-client-request-management)
     - [2.2 Fault tolerance](#22-fault-tolerance)
     - [2.3 Cloud connection](#23-cloud-connection)
@@ -16,11 +24,15 @@
 - [5. References](#5-references)
 - [6. Members](#6-members)
 
+---
+
 ## 0. Context and overview
 
 - `Local-First Design`: prioritizes a local-first approach, running code on user devices for data persistence. This ensures offline functionality, enhancing user experience by allowing them to access and modify their shopping lists without an internet connection.
 
 - `Collaborative Lists`: each shopping list has a unique ID, facilitating collaboration. Users with the list ID can seamlessly collaborate, enabling them to collectively manage and update shopping lists.
+
+---
 
 ## 1. Technology
 
@@ -34,7 +46,9 @@ Additionally, for distributed system connections, cloud management, and maintain
 - `ZeroMQ`, for high-performance asynchronous messaging;
 - `UUID`, for the generation of unique identifiers across the entire system;
 
-## 1. Cart API
+---
+
+## 2. Cart API
 
 Each node in the distributed system instantiates and manipulates a "Cart" object that gathers CRUD (Create, Read, Update, Delete) functions and data consistency features.
 
@@ -60,11 +74,13 @@ cart2.merge(cart1.toString())
 - Encapsulates complex operations and algorithms for data consistency (CRDTs);
 - It is the only variable that nodes have to manipulate, simplifying concurrency control.
 
+---
+
 ### Implementation
 
 - Cart contains a Map between the URL of each list and an AWORSet, enabling constant-time data retrieval for a list, O(1);
 - AWORSet (*Add Wins Observed Remove Set*), a State-Based CRDT, keeps track of all causal contexts of the list but only retains in memory the items that have not been removed, improving spatial performance;
-- GCounter (*Grow-only Counter*) is employed to manipulate the total and partial quantities of each item;
+- GCounter (*Grow-only Counter*) manipulates the total and partial quantities of each item;
 
 ```js
 class Cart {
@@ -82,53 +98,40 @@ class GCounter {
 }
 ```
 
-## 2. Local First
+---
 
-The persistence of data from recognized lists becomes crucial. In the initial phase, the client app checks for the presence of a local database:
+## 3. Local First
 
-- If present, loads its content, lists and corresponding items;
-- If absent, creates an empty database following the predefined schema;
+- In the initial phase, the client app checks for the presence of a local database following the predefined schema;
 
 <p align="center">
   <img src="../imgs/Database.png">
   <p align="center">Figure 1: Database Schema</p>
 </p><br>
 
--> Repare-se que só donos podem eliminar o seu próprio
+- The URL is instantiated locally using UUID v4:
+  - global uniqueness
+  - it does not rely on any user input, which may not be unique throughout the system
+  - is independent of timestamps, which can be desynchronized between nodes
 
-To enable the secure sharing of shopping lists between users, two requirements should be concurrently met upon their creation:
-
-- The list must be instantiated locally, following the Local First approach;
-- The generated URL must be unique throughout the system and serve as the identifier for that specific list;
-
-If the URL construction relies on the list name and/or creation timestamp, conflicts may arise in the system. To address this concern, the current implementation is based on `UUIDs`[8]. UUIDs (*Universally Unique Identifiers*) are globally unique identifiers that ensure uniqueness throughout the system. 
-In this scenario, version 4 of UUIDs is selected, which provide a high probability of uniqueness as they are based on random data. This makes them suitable for generating unique URLs in a distributed system where nodes cannot communicate initially.
+--- 
 
 <p align="center">
   <img src="../imgs/Local.png">
   <p align="center">Figure 2: Local First approach</p>
 </p><br>
 
-As depicted in [Figure 2], the client web application has three essential tasks: client request management, fault tolerance, and cloud connection. For improved management and isolation of each action, `Worker Threads` with `Mutex` were utilized. Since they will be manipulating the same data structure (a CRDT [2], to be further explored), it is necessary to ensure concurrency control and inhibit potential errors and inconsistency.
+- `Client request management`;
+- `Fault tolerance`: periodically, the current state of the Cart is stored in the local database, allowing data recovery from the node in case of failure;
+- `Cloud connection`: periodically, if there is a connection to the cloud, the current state of the cart is sent. The response, which is a sub-state of the server that the client should be aware of for the update, can be merged immediately.
 
-### 2.1 Client Request Management
+Improved management and isolation of each action by using `Worker Threads`, with `Locks` for concurrency control.
 
-This includes handling user inputs, processing requests promptly, and ensuring a responsive interaction with the application.
-
-### 2.2 Fault tolerance
-
-The web application periodically stores the volatile manipulated information in the local database file. This way, even if there is an error in the application or connectivity issues, most, if not all, of the user's changes will be saved, including those that have not yet been backed up to the cloud.
-
-### 2.3 Cloud connection
-
-The previously described approach will ensure the proper functioning of the web application even without a connection to the cloud. To manage data cloud backup, the client-side periodically attempts to establish a connection with the cloud for the following purposes:
-
-- Sending modified local information to the cloud to propagate it throughout the system;
-- Updating local information based on what is received from the cloud;
+--- 
 
 ## 3. Cloud
 
-In this cloud-based system, clients exclusively connect to a central proxy server. This architecture offers several key advantages:
+Clients exclusively connect to a central proxy server
 
 - An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
 - Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
@@ -170,16 +173,6 @@ When a node detects a modification in its internal CRDT, it proceeds to communic
 
 An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
 
-## 4. CRDT
-
-CRDTs (*Conflict-free Replicated Data Types*) are utilized for message exchange both between client-server and among server nodes. These data types offer a distinctive approach to addressing consistency in distributed systems, enabling automatic convergence of replicated data, even in the presence of concurrent operations and asynchronous communication between nodes.
-
-Given that each user should be able to instantiate and delete lists, as well as instantiate and delete items within each list, implementing CRDT for these data structures based on `ORMap` (*Observed Remove Map*) and `Enable Wins` was a prudent choice. Indeed, considering the project's context, concurrent deletions and updates of a list or item should promote the persistence of that structure in the system, thereby avoiding information loss.
-
-To increment the quantity purchased for each item, the `GCounter CRDT` was the suitable choice as it efficiently handles concurrent increments.
-
-All operations performed on these Delta-enabled CRDTs [3] are idempotent, ensuring the convergence of the current system state and eventual consistency.
-
 ## 5. References
 
 - [1] - [Amazon Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
@@ -190,12 +183,5 @@ All operations performed on these Delta-enabled CRDTs [3] are idempotent, ensuri
 - [6] - [UUID in JS](https://www.npmjs.com/package/uuid)
 - [7] - [Worker Threads](https://nodejs.org/api/worker_threads.html)
 - [8] - [ZeroMQ.js](https://github.com/zeromq/zeromq.js#examples)
-
-## 6. Members
-
-- André Costa, up201905916@up.pt
-- Bárbara Carvalho, up202004695@up.pt
-- Fábio Sá, up202007658@up.pt
-- Luís Cabral, up202006464@up.pt
 
 #### T05, SDLE 2023/24
