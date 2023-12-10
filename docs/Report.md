@@ -13,16 +13,9 @@
 - [1. Technology](#1-technology)
 - [2. Cart API](#2-cart-api) 
 - [3. Local First](#3-local-first)
-    - [2.1 Client Request Management](#21-client-request-management)
-    - [2.2 Fault tolerance](#22-fault-tolerance)
-    - [2.3 Cloud connection](#23-cloud-connection)
-- [3. Cloud](#3-cloud)
-    - [3.1 Client Request Management](#31-client-request-management)
-    - [3.2 Fault tolerance](#32-fault-tolerance)
-    - [3.3 Replication between nodes](#33-replication-between-nodes)
-- [4. CRDT](#4-crdt)
+- [4. Cloud](#4-cloud)
+    - [4.1 Replication between nodes](#41-replication-between-nodes)
 - [5. References](#5-references)
-- [6. Members](#6-members)
 
 ---
 
@@ -129,7 +122,7 @@ Improved management and isolation of each action by using `Worker Threads`, with
 
 --- 
 
-## 3. Cloud
+## 4. Cloud
 
 Clients exclusively connect to a central proxy server
 
@@ -152,15 +145,7 @@ The core of the solution lies in the strategic management and distribution of da
 
 As stated in [Figure 4], the server-side application has three threads as well, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
 
-### 3.1 Client Request Management
-
-When the proxy redirects requests to the server, the server is responsible for adjusting its internal Conflict-free Replicated Data Type (CRDT) [2] based on client updates. The response to the request will be another CRDT whose content reflects the current state of the system for the lists known to the client.
-
-### 3.2 Fault tolerance
-
-Just like on the client-side, there is a need for each node/server to have its own database. Therefore, the server-side web application periodically stores the volatile manipulated information in the local database file.
-
-### 3.3 Replication between nodes
+### 4.1 Replication between nodes
 
 To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure 5].
 
@@ -172,6 +157,8 @@ To ensure eventual consistency across the entire system, the replication of modi
 When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
 
 An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
+
+---
 
 ## 5. References
 
