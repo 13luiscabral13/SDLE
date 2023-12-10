@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "cloud": "sh ./start-cloud.sh",
-    "client": "sh ./start-client.sh"
+    "cloud": "bash start-cloud.sh",
+    "client": "bash start-client.sh"
   },
   "author": "",
   "license": "ISC",
