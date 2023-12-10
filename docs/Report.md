@@ -20,33 +20,81 @@
 
 - `Local-First Design`: prioritizes a local-first approach, running code on user devices for data persistence. This ensures offline functionality, enhancing user experience by allowing them to access and modify their shopping lists without an internet connection.
 
-- `Collaborative Lists`: ach shopping list has a unique ID, facilitating collaboration. Users with the list ID can seamlessly collaborate, enabling them to collectively manage and update shopping lists.
+- `Collaborative Lists`: each shopping list has a unique ID, facilitating collaboration. Users with the list ID can seamlessly collaborate, enabling them to collectively manage and update shopping lists.
 
 ## 1. Technology
 
-The selected client-side technologies prioritize simplicity and user-friendliness, placing a strong emphasis on delivering a seamless experience, especially in web applications where ease of installation and use is paramount. The selected technologies for this project encompass:
+We opted for user-friendly web application, prioritizing simplicity in technology choices for easy installation and use.
 
 - `Node.js`, for client and server side applications;
-- `SQLite3`, for database management system;
+- `SQLite3`, for local database management system;
 
-Additionally, the project employed selected technologies and libraries for the implementation of distributed system connections, cloud infrastructure management, and the maintenance of integrity and consistency:
+Additionally, for distributed system connections, cloud management, and maintaining integrity and consistency:
 
 - `ZeroMQ`, for high-performance asynchronous messaging;
 - `UUID`, for the generation of unique identifiers across the entire system;
 
+## 1. Cart API
+
+Each node in the distributed system instantiates and manipulates a "Cart" object that gathers CRUD (Create, Read, Update, Delete) functions and data consistency features.
+
+```js
+const cart = new Cart(<node-id>);
+cart.load(db);
+
+const url = cart.createList('List A');
+cart.deleteItem(url, 'Apple');
+cart.updateItem(url, 'Soup', 6, 7);
+
+cart.info()     // get information for frontend
+cart.toString() // serialize object for messaging and merge
+
+// syncronization
+cart1.merge(cart2.toString())
+cart2.merge(cart1.toString())
+```
+
+### Advantages:
+
+- Functional for any node in the system (client or server);
+- Encapsulates complex operations and algorithms for data consistency (CRDTs);
+- It is the only variable that nodes have to manipulate, simplifying concurrency control.
+
+### Implementation
+
+- Cart contains a Map between the URL of each list and an AWORSet, enabling constant-time data retrieval for a list, O(1);
+- AWORSet (*Add Wins Observed Remove Set*), a State-Based CRDT, keeps track of all causal contexts of the list but only retains in memory the items that have not been removed, improving spatial performance;
+- GCounter (*Grow-only Counter*) is employed to manipulate the total and partial quantities of each item;
+
+```js
+class Cart {
+  this.lists = new Map();   // Map<url, AWORSet>
+}
+
+class AWORSet {
+  this.set = []             // [(itemName, GCounter, (nodeID, version))]
+  this.causalContext = []   // [(nodeID, version)]
+}
+
+class GCounter {
+  this.currentValue = 0;
+  this.totalValue = 0;
+}
+```
+
 ## 2. Local First
 
-The primary focus initially lies in achieving a `Local First` [5] behavior. To accomplish this, the persistence of data from recognized lists becomes crucial. In the initial phase, the client app checks for the presence of a local database:
+The persistence of data from recognized lists becomes crucial. In the initial phase, the client app checks for the presence of a local database:
 
 - If present, loads its content, lists and corresponding items;
-- If absent, creates an empty database following the predefined schema presented in [Figure 1];
+- If absent, creates an empty database following the predefined schema;
 
 <p align="center">
   <img src="../imgs/Database.png">
   <p align="center">Figure 1: Database Schema</p>
 </p><br>
 
-The boolean attributes `changed` and `deleted` play a crucial role in identifying, under adverse conditions, the lists or items that have been modified or deleted by the client but have not yet been included in the cloud backup.
+-> Repare-se que só donos podem eliminar o seu próprio
 
 To enable the secure sharing of shopping lists between users, two requirements should be concurrently met upon their creation:
 
