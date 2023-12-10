@@ -31,20 +31,29 @@ async function startServer(port) {
     cart.load(db)
 
     let mergeLock = false;
-    async function withMergeLock(callback) {
+    async function withLock(callback) {
         while (mergeLock) {
-        // Wait until the lock is released
-        await new Promise(resolve => setTimeout(resolve, 100));
+            // Wait until the lock is released
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
     
         mergeLock = true;
     
         try {
-        // Perform the critical section
-        await callback();
+            // Perform the critical section
+            await callback();
         } finally {
-        // Release the lock
-        mergeLock = false;
+            // Release the lock
+            mergeLock = false;
+        }
+    }
+
+    const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: { dbFile: `../database/servers/${port}.db` }});
+    setInterval(check_cart_isChanged, 5000)
+
+    function check_cart_isChanged() {
+        if(cart.changed()) {
+            dbUpdateThread.postMessage({ type: 'updateDB', cart: cart.info() });
         }
     }
 
@@ -54,7 +63,7 @@ async function startServer(port) {
     updateWorker.on('message', async (message) => {
         if(message.type === 'updateCart') {
             try {
-                await withMergeLock(async () => {
+                await withLock(async () => {
                   cart.merge(message.cart);
                 });
             } catch (error) {
@@ -80,7 +89,7 @@ async function startServer(port) {
         
         let reply
         try {
-            await withMergeLock(async () => {
+            await withLock(async () => {
               reply = cart.merge(response, true);
             });
         } catch (error) {
