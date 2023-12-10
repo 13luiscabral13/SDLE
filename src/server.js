@@ -96,7 +96,9 @@ async function startServer(port) {
         } catch (error) {
             console.error(error);
         }
-        console.log(port + " current cart: \n" + cart.info().toString() + "\n")
+        console.log(port + " current cart:")
+        let info = cart.info();
+        console.log("", info);
     
         await sock.send(["", id, reply])
     }
