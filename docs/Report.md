@@ -5,7 +5,7 @@
 - Fábio Sá, up202007658@up.pt
 - Luís Cabral, up202006464@up.pt
 
----
+--- 1
 
 ## Index
 
@@ -17,7 +17,7 @@
     - [4.1 Replication between nodes](#41-replication-between-nodes)
 - [5. References](#5-references)
 
----
+--- 2
 
 ## 0. Context and overview
 
@@ -25,7 +25,7 @@
 
 - `Collaborative Lists`: each shopping list has a unique ID, facilitating collaboration. Users with the list ID can seamlessly collaborate, enabling them to collectively manage and update shopping lists.
 
----
+--- 3
 
 ## 1. Technology
 
@@ -39,7 +39,7 @@ Additionally, for distributed system connections, cloud management, and maintain
 - `ZeroMQ`, for high-performance asynchronous messaging;
 - `UUID`, for the generation of unique identifiers across the entire system;
 
----
+--- 4
 
 ## 2. Cart API
 
@@ -67,7 +67,7 @@ cart2.merge(cart1.toString())
 - Encapsulates complex operations and algorithms for data consistency (CRDTs);
 - It is the only variable that nodes have to manipulate, simplifying concurrency control.
 
----
+--- 5
 
 ### Implementation
 
@@ -91,7 +91,7 @@ class GCounter {
 }
 ```
 
----
+--- 6
 
 ## 3. Local First
 
@@ -107,27 +107,29 @@ class GCounter {
   - it does not rely on any user input, which may not be unique throughout the system
   - is independent of timestamps, which can be desynchronized between nodes
 
---- 
+--- 7
 
 <p align="center">
   <img src="../imgs/Local.png">
   <p align="center">Figure 2: Local First approach</p>
 </p><br>
 
-- `Client request management`;
+- `Frontend request management`;
 - `Fault tolerance`: periodically, the current state of the Cart is stored in the local database, allowing data recovery from the node in case of failure;
 - `Cloud connection`: periodically, if there is a connection to the cloud, the current state of the cart is sent. The response, which is a sub-state of the server that the client should be aware of for the update, can be merged immediately.
 
 Improved management and isolation of each action by using `Worker Threads`, with `Locks` for concurrency control.
 
---- 
+--- 8
 
 ## 4. Cloud
 
 Clients exclusively connect to a central proxy server
 
-- An end-to-end system without the user being aware of the cloud implementation, including details such as the number of available servers or their corresponding addresses;
+- An end-to-end system without user awareness of cloud details, including server numbers or addresses;
 - Elimination of the need for a fixed connection between the client and server or a fixed number of servers always available;
+
+<TODO: Load Balancer. Este texto pode não estar atualizado>
 
 The implemented proxy server serves a critical additional function: load balancing [4]. Load balancing is essential to prevent performance degradation or bottlenecks when handling extensive requests on a single server, ultimately enhancing the efficiency of the entire system. For load balancing, the ZeroMQ library is employed, utilizing ROUTER-REQ connections in both the frontend (client-proxy connection) and the backend (proxy-server connection).
 
@@ -136,29 +138,43 @@ The implemented proxy server serves a critical additional function: load balanci
   <p align="center">Figure 3: Proxy as Load Balancer</p>
 </p><br>
 
-The core of the solution lies in the strategic management and distribution of data. The proposals for replication and sharding are directly informed by the architecture of Amazon Dynamo [1], providing a concrete and proven strategy for achieving scalability and resilience.
+--- 9
 
 <p align="center">
   <img src="../imgs/Node.png">
   <p align="center">Figure 4: Cloud Node</p>
 </p><br>
 
-As stated in [Figure 4], the server-side application has three threads as well, with proper concurrency control, to perform essential tasks: client request management, fault tolerance, and replication.
+- `Client request management`: recebe o estado atual do client, merge e retorna o seu sub-estado que interessa ao client;
+- `Fault tolerance`: periodically, the current state of the Cart is stored in the local database, allowing data recovery from the node in case of failure;
+- `Ring replication`: cada server pode periodicamente enviar o seu estado a outro servidor vizinho ou receber atualizações dos seus vizinhos;
+
+--- 10
 
 ### 4.1 Replication between nodes
 
-To ensure eventual consistency across the entire system, the replication of modified data between servers is crucial. Upon instantiation, servers gain access to a list of neighboring servers. The order of each server's list enables the construction of a dependency network in the form of a ring, as illustrated in [Figure 5].
+- To ensure eventual consistency across the entire system (lists sharding)
+
+- Upon instantiation servers gain access to a list of neighboring servers. 
+
+- The order of each server's list enables the construction of a dependency network in the form of a ring;
 
 <p align="center">
   <img src="../imgs/Ring.png">
   <p align="center">Figure 5: Replication ring</p>
 </p><br>
 
-When a node detects a modification in its internal CRDT, it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order. The propagation involves a merge between the CRDTs of the two parties. In terms of connection fault tolerance, if a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
+- Periodicamente it proceeds to communicate and propagate this alteration to the N neighboring nodes, following the specified order.
 
-An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
+- If a server among the chosen N servers does not respond, it is skipped, and communication is redirected to another remaining server.
 
----
+- An interruption or failure of a node does not signify a permanent exit from the ring; therefore, it should not result in the rebalancing of the assignment of these partitions.
+
+--- 11
+
+Frontend
+
+--- 12
 
 ## 5. References
 
