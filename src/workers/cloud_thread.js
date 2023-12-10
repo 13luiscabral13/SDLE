@@ -19,11 +19,13 @@ if (!isMainThread) {
         await new Promise(resolve => setTimeout(resolve, 10));
         try {
             await sock.send(["", port, cart]);
-            console.log("Cart successfully sent!")
         } catch (err) {
             console.error("Error sending to proxy");
             return; // Log the error and return from the function
         }
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log("Cart successfully sent!")
 
         for await (const [delimiter, id, response] of sock) {
             if (id.toString() == port.toString()) {
