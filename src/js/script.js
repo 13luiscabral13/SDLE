@@ -63,7 +63,6 @@ form.addEventListener("submit", function (event) {
   const title = document.getElementById("create-list-name");
   const titleText = title.value
   let shoppingLists = document.querySelectorAll('.shopping-list-item');
-  console.log(shoppingLists);
   if (shoppingLists.length != 0) {
     for (var key in shoppingLists) {
       if (shoppingLists[key].getAttribute('id').split('shopping-list-name-')[1] == titleText) {
@@ -378,14 +377,8 @@ function checkForChanges(initialArray, updatedArray) {
   const sortedUpdatedArray = sortArray(updatedArray);
 
   if (JSON.stringify(sortedInitialArray) === JSON.stringify(sortedUpdatedArray)) {
-    console.log("Can't find changes");
-    console.log("Initial: ", initialArray);
-    console.log("Updated: ", updatedArray);
     document.getElementById("saveChanges").hidden = true;
   } else {
-    console.log("Found Changes!");
-    console.log("Initial: ", initialArray);
-    console.log("Updated: ", updatedArray);
     document.getElementById("saveChanges").hidden = false;
   }
 }
@@ -694,7 +687,6 @@ function createThisItem(itemData) {
     addButton.addEventListener("click", function () {
       intCur = parseInt(itemCur.textContent);
       intQua = parseInt(itemQua.textContent);
-      console.log("Cur: ", intCur, " Qua: ", intQua);
       newIntCur = intCur + 1;
       itemCur.textContent = newIntCur.toString();
       for (var key in updatedArray) {
@@ -817,7 +809,6 @@ function createThisItem(itemData) {
   itemQua.addEventListener("keydown", (event) => {
     console.log(event.key);
     if (event.key === "Enter") {
-      console.log("Enter was pressed");
       // Check if the Enter key was pressed
       let text = convert(itemQua.innerText);
       if (checkInteger(text)) {
@@ -834,7 +825,6 @@ function createThisItem(itemData) {
         itemQua.innerText = text;
         itemQua.contentEditable = false; // Disable contentEditable
         changeArray(text);
-        console.log("Updated Array: ", updatedArray);
         checkForChanges(initialArray, updatedArray);
       }
     }
@@ -997,7 +987,6 @@ function createAddItemModal(ul, dataName, createDiv) {
 
   const mediaQuery = window.matchMedia("(max-width: 600px)");
   function checkIfItemExists(name, array) {
-    console.log("Checking if ", name, " exists in ", array);
     for (var key in array) {
       if (array[key]['name'] == name) {
         return true;
