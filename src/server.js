@@ -3,6 +3,7 @@ const { Worker, isMainThread } = require('worker_threads');
 const zmq = require("zeromq");
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 
 async function startServer(port) {
     // Creation and loading of the database
@@ -49,7 +50,7 @@ async function startServer(port) {
     }
 
     const dbUpdateThread = new Worker('./workers/db_thread.js', {workerData: { dbFile: `../database/servers/${port}.db` }});
-    setInterval(check_cart_isChanged, 5000)
+    setInterval(check_cart_isChanged, config.db_update)
 
     function check_cart_isChanged() {
         if(cart.changed()) {
@@ -77,15 +78,15 @@ async function startServer(port) {
         updateWorker.postMessage({ type: 'updateNeighbors', cart: cart.toString()});
     }
 
-    setInterval(sendingUpdates, 5000);
+    setInterval(sendingUpdates, config.server_neighbor_update);
 
     const context = new zmq.Context()
     const sock = new zmq.Reply(context)
     sock.connect("tcp://localhost:9000")
-    console.log("worker ready...");
+    console.log(`Server ${port} started and ready to work... (pid = ${process.pid})`);
 
     for await (const [delimiter, id, response] of sock) {
-        console.log(port + " received a message related to:", id.toString(), "containing message:", response.toString())
+        console.log(port + " received a message related to client ", id.toString(),"\n")
         
         let reply
         try {
@@ -95,7 +96,7 @@ async function startServer(port) {
         } catch (error) {
             console.error(error);
         }
-        console.log(cart.info())
+        console.log(port + " current cart: \n" + cart.info().toString() + "\n")
     
         await sock.send(["", id, reply])
     }
